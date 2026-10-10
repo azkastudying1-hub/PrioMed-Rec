@@ -1,0 +1,34 @@
+{
+  "version": "0.1.0",
+  "feature_version": "features-0.1.0",
+  "feature_columns": [
+    "age",
+    "age_65_plus",
+    "gender_encoded",
+    "pre_admission_medication_count",
+    "admission_medication_count",
+    "total_medication_count",
+    "new_medication_count",
+    "discontinued_medication_count",
+    "polypharmacy_flag",
+    "high_alert_flag",
+    "high_alert_count",
+    "potential_duplicate_candidates",
+    "active_condition_count",
+    "prior_encounter_count",
+    "allergy_count",
+    "has_drug_allergy"
+  ],
+  "feature_count": 16,
+  "polypharmacy_threshold": 5,
+  "excluded_features": [
+    {
+      "name": "allergy_count",
+      "reason": "DQI-001: patient_id 100% null in allergies.csv"
+    },
+    {
+      "name": "has_drug_allergy",
+      "reason": "DQI-001: patient_id 100% null in allergies.csv"
+    }
+  ]
+}

@@ -1,0 +1,446 @@
+{
+  "model_version": "model-0.3.0",
+  "label_version": "labels-3.0.0",
+  "feature_version": "features-0.2.0",
+  "best_model": "XGBoost",
+  "best_feature_set": "leakage_safe",
+  "target": "has_discrepancy",
+  "label_strategy": "structural_discrepancy_detection_no_downsampling",
+  "selection_metric": "top_20_recall (primary), f1 (tiebreaker) \u2014 validation set, leakage-safe features",
+  "note": "Labels are SYNTHETIC ENGINEERING TARGETS derived from Synthea longitudinal medication data. They are NOT clinical ground truth. Software correctness (231 tests) != ML validity != clinical validation. ML is used for prioritization/ranking, NOT diagnosis or therapy decisions.",
+  "validation_leakage_safe": [
+    {
+      "label": "RuleBaseline_safe",
+      "n": 5076,
+      "n_pos": 3988,
+      "n_neg": 1088,
+      "acc": 0.6515,
+      "prec": 0.7795,
+      "rec": 0.7758,
+      "f1": 0.7777,
+      "roc_auc": 0.4858,
+      "pr_auc": 0.7809,
+      "brier": 0.3485,
+      "top20_rec": 0.1956,
+      "top20_prec": 0.7685,
+      "lift_top20_rec": 0.9782,
+      "lift_top20_prec": 0.9782
+    },
+    {
+      "label": "LogReg_safe",
+      "n": 5076,
+      "n_pos": 3988,
+      "n_neg": 1088,
+      "acc": 0.7228,
+      "prec": 0.9879,
+      "rec": 0.6552,
+      "f1": 0.7879,
+      "roc_auc": 0.8396,
+      "pr_auc": 0.9576,
+      "brier": 0.1623,
+      "top20_rec": 0.2545,
+      "top20_prec": 1.0,
+      "lift_top20_rec": 1.2728,
+      "lift_top20_prec": 1.2728
+    },
+    {
+      "label": "RandomForest_safe",
+      "n": 5076,
+      "n_pos": 3988,
+      "n_neg": 1088,
+      "acc": 0.7622,
+      "prec": 0.9715,
+      "rec": 0.7184,
+      "f1": 0.826,
+      "roc_auc": 0.8891,
+      "pr_auc": 0.9696,
+      "brier": 0.1386,
+      "top20_rec": 0.2545,
+      "top20_prec": 1.0,
+      "lift_top20_rec": 1.2728,
+      "lift_top20_prec": 1.2728
+    },
+    {
+      "label": "XGBoost_safe",
+      "n": 5076,
+      "n_pos": 3988,
+      "n_neg": 1088,
+      "acc": 0.7597,
+      "prec": 0.9488,
+      "rec": 0.7337,
+      "f1": 0.8275,
+      "roc_auc": 0.8938,
+      "pr_auc": 0.9705,
+      "brier": 0.1336,
+      "top20_rec": 0.2545,
+      "top20_prec": 1.0,
+      "lift_top20_rec": 1.2728,
+      "lift_top20_prec": 1.2728
+    }
+  ],
+  "validation_full": [
+    {
+      "label": "RuleBaseline_full",
+      "n": 5076,
+      "n_pos": 3988,
+      "n_neg": 1088,
+      "acc": 0.6515,
+      "prec": 0.7795,
+      "rec": 0.7758,
+      "f1": 0.7777,
+      "roc_auc": 0.4858,
+      "pr_auc": 0.7809,
+      "brier": 0.3485,
+      "top20_rec": 0.1956,
+      "top20_prec": 0.7685,
+      "lift_top20_rec": 0.9782,
+      "lift_top20_prec": 0.9782
+    },
+    {
+      "label": "LogReg_full",
+      "n": 5076,
+      "n_pos": 3988,
+      "n_neg": 1088,
+      "acc": 1.0,
+      "prec": 1.0,
+      "rec": 1.0,
+      "f1": 1.0,
+      "roc_auc": 1.0,
+      "pr_auc": 1.0,
+      "brier": 0.0,
+      "top20_rec": 0.2545,
+      "top20_prec": 1.0,
+      "lift_top20_rec": 1.2728,
+      "lift_top20_prec": 1.2728
+    },
+    {
+      "label": "RandomForest_full",
+      "n": 5076,
+      "n_pos": 3988,
+      "n_neg": 1088,
+      "acc": 1.0,
+      "prec": 1.0,
+      "rec": 1.0,
+      "f1": 1.0,
+      "roc_auc": 1.0,
+      "pr_auc": 1.0,
+      "brier": 0.0,
+      "top20_rec": 0.2545,
+      "top20_prec": 1.0,
+      "lift_top20_rec": 1.2728,
+      "lift_top20_prec": 1.2728
+    },
+    {
+      "label": "XGBoost_full",
+      "n": 5076,
+      "n_pos": 3988,
+      "n_neg": 1088,
+      "acc": 1.0,
+      "prec": 1.0,
+      "rec": 1.0,
+      "f1": 1.0,
+      "roc_auc": 1.0,
+      "pr_auc": 1.0,
+      "brier": 0.0,
+      "top20_rec": 0.2545,
+      "top20_prec": 1.0,
+      "lift_top20_rec": 1.2728,
+      "lift_top20_prec": 1.2728
+    }
+  ],
+  "test_leakage_safe": [
+    {
+      "label": "RuleBaseline_safe",
+      "n": 4733,
+      "n_pos": 3590,
+      "n_neg": 1143,
+      "acc": 0.6355,
+      "prec": 0.7529,
+      "rec": 0.7733,
+      "f1": 0.763,
+      "roc_auc": 0.4881,
+      "pr_auc": 0.7542,
+      "brier": 0.3645,
+      "top20_rec": 0.1908,
+      "top20_prec": 0.7241,
+      "lift_top20_rec": 0.9546,
+      "lift_top20_prec": 0.9546
+    },
+    {
+      "label": "LogReg_safe",
+      "n": 4733,
+      "n_pos": 3590,
+      "n_neg": 1143,
+      "acc": 0.6966,
+      "prec": 0.9595,
+      "rec": 0.6265,
+      "f1": 0.758,
+      "roc_auc": 0.8251,
+      "pr_auc": 0.9462,
+      "brier": 0.1722,
+      "top20_rec": 0.2635,
+      "top20_prec": 1.0,
+      "lift_top20_rec": 1.3183,
+      "lift_top20_prec": 1.3184
+    },
+    {
+      "label": "RandomForest_safe",
+      "n": 4733,
+      "n_pos": 3590,
+      "n_neg": 1143,
+      "acc": 0.7517,
+      "prec": 0.9558,
+      "rec": 0.7053,
+      "f1": 0.8117,
+      "roc_auc": 0.8934,
+      "pr_auc": 0.9657,
+      "brier": 0.1415,
+      "top20_rec": 0.2635,
+      "top20_prec": 1.0,
+      "lift_top20_rec": 1.3183,
+      "lift_top20_prec": 1.3184
+    },
+    {
+      "label": "XGBoost_safe",
+      "n": 4733,
+      "n_pos": 3590,
+      "n_neg": 1143,
+      "acc": 0.7828,
+      "prec": 0.9454,
+      "rec": 0.7574,
+      "f1": 0.841,
+      "roc_auc": 0.8967,
+      "pr_auc": 0.9666,
+      "brier": 0.1322,
+      "top20_rec": 0.2635,
+      "top20_prec": 1.0,
+      "lift_top20_rec": 1.3183,
+      "lift_top20_prec": 1.3184
+    }
+  ],
+  "test_full": [
+    {
+      "label": "RuleBaseline_full",
+      "n": 4733,
+      "n_pos": 3590,
+      "n_neg": 1143,
+      "acc": 0.6355,
+      "prec": 0.7529,
+      "rec": 0.7733,
+      "f1": 0.763,
+      "roc_auc": 0.4881,
+      "pr_auc": 0.7542,
+      "brier": 0.3645,
+      "top20_rec": 0.1908,
+      "top20_prec": 0.7241,
+      "lift_top20_rec": 0.9546,
+      "lift_top20_prec": 0.9546
+    },
+    {
+      "label": "LogReg_full",
+      "n": 4733,
+      "n_pos": 3590,
+      "n_neg": 1143,
+      "acc": 1.0,
+      "prec": 1.0,
+      "rec": 1.0,
+      "f1": 1.0,
+      "roc_auc": 1.0,
+      "pr_auc": 1.0,
+      "brier": 0.0,
+      "top20_rec": 0.2635,
+      "top20_prec": 1.0,
+      "lift_top20_rec": 1.3183,
+      "lift_top20_prec": 1.3184
+    },
+    {
+      "label": "RandomForest_full",
+      "n": 4733,
+      "n_pos": 3590,
+      "n_neg": 1143,
+      "acc": 1.0,
+      "prec": 1.0,
+      "rec": 1.0,
+      "f1": 1.0,
+      "roc_auc": 1.0,
+      "pr_auc": 1.0,
+      "brier": 0.0,
+      "top20_rec": 0.2635,
+      "top20_prec": 1.0,
+      "lift_top20_rec": 1.3183,
+      "lift_top20_prec": 1.3184
+    },
+    {
+      "label": "XGBoost_full",
+      "n": 4733,
+      "n_pos": 3590,
+      "n_neg": 1143,
+      "acc": 1.0,
+      "prec": 1.0,
+      "rec": 1.0,
+      "f1": 1.0,
+      "roc_auc": 1.0,
+      "pr_auc": 1.0,
+      "brier": 0.0,
+      "top20_rec": 0.2635,
+      "top20_prec": 1.0,
+      "lift_top20_rec": 1.3183,
+      "lift_top20_prec": 1.3184
+    }
+  ],
+  "cv_repeated": {
+    "n_folds": 5,
+    "n_repeats": 5,
+    "feature_set": "leakage_safe",
+    "results": {
+      "LogReg": {
+        "roc_mean": 0.8258,
+        "roc_sd": 0.0142,
+        "roc_ci95": [
+          0.8202,
+          0.8313
+        ],
+        "t20r_mean": 0.2622,
+        "t20r_sd": 0.004,
+        "t20r_ci95": [
+          0.2606,
+          0.2638
+        ],
+        "f1_mean": 0.7533,
+        "f1_sd": 0.0255,
+        "n_folds": 25
+      },
+      "RandomForest": {
+        "roc_mean": 0.8839,
+        "roc_sd": 0.0113,
+        "roc_ci95": [
+          0.8795,
+          0.8883
+        ],
+        "t20r_mean": 0.2622,
+        "t20r_sd": 0.004,
+        "t20r_ci95": [
+          0.2606,
+          0.2638
+        ],
+        "f1_mean": 0.8042,
+        "f1_sd": 0.0189,
+        "n_folds": 25
+      },
+      "XGBoost": {
+        "roc_mean": 0.887,
+        "roc_sd": 0.0122,
+        "roc_ci95": [
+          0.8822,
+          0.8918
+        ],
+        "t20r_mean": 0.2622,
+        "t20r_sd": 0.004,
+        "t20r_ci95": [
+          0.2606,
+          0.2638
+        ],
+        "f1_mean": 0.8225,
+        "f1_sd": 0.0178,
+        "n_folds": 25
+      }
+    }
+  },
+  "permutation_test": {
+    "n_permutations": 100,
+    "model": "RandomForest",
+    "feature_set": "leakage_safe",
+    "original_roc_auc": 0.8934,
+    "perm_mean": 0.5238,
+    "perm_sd": 0.0769,
+    "perm_max": 0.6917,
+    "empirical_p_value": 0.0,
+    "sigmas_above_perm_mean": 4.81
+  },
+  "ablation": {
+    "safe_full": {
+      "roc_auc": 0.8934,
+      "top20_rec": 0.2635,
+      "n_features": 10,
+      "features": [
+        "age",
+        "age_65_plus",
+        "gender_encoded",
+        "polypharmacy_flag",
+        "high_alert_flag",
+        "high_alert_count",
+        "active_condition_count",
+        "prior_encounter_count",
+        "allergy_count",
+        "has_drug_allergy"
+      ]
+    },
+    "no_highalert": {
+      "roc_auc": 0.862,
+      "top20_rec": 0.2635,
+      "n_features": 8,
+      "features": [
+        "age",
+        "age_65_plus",
+        "gender_encoded",
+        "polypharmacy_flag",
+        "active_condition_count",
+        "prior_encounter_count",
+        "allergy_count",
+        "has_drug_allergy"
+      ]
+    },
+    "demo_only": {
+      "roc_auc": 0.7975,
+      "top20_rec": 0.2563,
+      "n_features": 5,
+      "features": [
+        "age",
+        "age_65_plus",
+        "gender_encoded",
+        "allergy_count",
+        "has_drug_allergy"
+      ]
+    },
+    "clinical_only": {
+      "roc_auc": 0.8313,
+      "top20_rec": 0.2635,
+      "n_features": 3,
+      "features": [
+        "active_condition_count",
+        "prior_encounter_count",
+        "polypharmacy_flag"
+      ]
+    }
+  },
+  "calibration": {
+    "model": "XGBoost",
+    "feature_set": "leakage_safe",
+    "mace": 0.1064,
+    "status": "POOR"
+  },
+  "label_distribution": {
+    "total_encounters": 31625,
+    "positive": 24131,
+    "negative": 7494,
+    "pct_positive": 0.763
+  },
+  "split_distribution": {
+    "train": {
+      "n": 21816,
+      "pos": 16553,
+      "pct_pos": 0.7588
+    },
+    "val": {
+      "n": 5076,
+      "pos": 3988,
+      "pct_pos": 0.7857
+    },
+    "test": {
+      "n": 4733,
+      "pos": 3590,
+      "pct_pos": 0.7585
+    }
+  },
+  "training_date": "2026-10-05T08:36:58.053552Z"
+}

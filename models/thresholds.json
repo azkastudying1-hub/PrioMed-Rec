@@ -1,0 +1,11 @@
+{
+  "threshold_version": "thresholds-0.1.0",
+  "high": 0.7,
+  "medium": 0.4,
+  "mapping": {
+    "2": "HIGH",
+    "1": "MEDIUM",
+    "0": "LOW"
+  },
+  "note": "Thresholds are provisional \u2014 set by project team, not clinically validated."
+}

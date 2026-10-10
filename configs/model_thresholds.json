@@ -1,0 +1,8 @@
+{
+  "version": "0.1.0",
+  "priority_classes": {
+    "high": {"threshold": 0.7, "label": "High"},
+    "medium": {"threshold": 0.4, "label": "Medium"},
+    "low": {"threshold": 0.0, "label": "Low"}
+  }
+}

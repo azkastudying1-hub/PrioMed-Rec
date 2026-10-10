@@ -1,0 +1,34 @@
+# Environment & Local Files
+.env
+.venv/
+env/
+venv/
+*.log
+
+# Git LFS / Heavy Data files (Large CSVs & Datasets)
+data/raw/synthea/*.csv
+data/interim/*.csv
+data/processed/*.csv
+!data/**/*.gitkeep
+
+# Python cache & build
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+dist/
+build/
+
+# IDE & Editor files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints/

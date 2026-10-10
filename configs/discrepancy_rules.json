@@ -1,0 +1,40 @@
+{
+  "rule_version": "rules-0.1.0",
+  "rules": {
+    "omission": {
+      "enabled": true,
+      "require_active_status": true,
+      "description": "Flags medications in pre-admission list absent from admission list"
+    },
+    "duplication": {
+      "enabled": true,
+      "match_by": ["medication_code", "normalized_name"],
+      "description": "Flags medications appearing more than once in admission list"
+    },
+    "dose_mismatch": {
+      "enabled": false,
+      "tolerance_pct": 0,
+      "skip_reason": "data_unavailable",
+      "description": "dose_value/dose_unit 100% null in medication_requests (DQI-005)"
+    },
+    "frequency_mismatch": {
+      "enabled": false,
+      "skip_if_empty": true,
+      "skip_reason": "data_unavailable",
+      "description": "frequency 100% null in medication_requests (DQI-005)"
+    },
+    "route_mismatch": {
+      "enabled": false,
+      "skip_if_empty": true,
+      "skip_reason": "data_unavailable",
+      "description": "route 100% null in medication_requests (DQI-005)"
+    }
+  },
+  "normalization": {
+    "primary_key": "medication_code",
+    "fallback": "normalized_name",
+    "case": "lower",
+    "strip_dosage_from_name": false,
+    "unresolved_flag": "UNRESOLVED_MEDICATION_MATCH"
+  }
+}

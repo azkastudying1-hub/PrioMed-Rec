@@ -1,0 +1,45 @@
+{
+  "version": "features-0.3.0",
+  "label_version": "labels-3.0.0",
+  "safe_features": [
+    "age",
+    "age_65_plus",
+    "gender_encoded",
+    "polypharmacy_flag",
+    "high_alert_flag",
+    "high_alert_count",
+    "active_condition_count",
+    "prior_encounter_count",
+    "allergy_count",
+    "has_drug_allergy"
+  ],
+  "forbidden_features": [
+    "discontinued_medication_count",
+    "new_medication_count",
+    "total_medication_count",
+    "pre_admission_medication_count",
+    "admission_medication_count",
+    "potential_duplicate_candidates"
+  ],
+  "feature_provenance": {
+    "age": "demographics \u2014 available at admission registration",
+    "age_65_plus": "derived: age >= 65 \u2014 available at registration",
+    "gender_encoded": "demographics \u2014 available at registration",
+    "polypharmacy_flag": "binary(total_med_count>=5) from admission orders \u2014 known at admission; NOT a set difference result",
+    "high_alert_flag": "any high-alert medication in pre+admission scan \u2014 known at admission",
+    "high_alert_count": "count of high-alert medications \u2014 known at admission",
+    "active_condition_count": "EHR active diagnoses at encounter_start",
+    "prior_encounter_count": "count of prior hospital encounters before this admission",
+    "allergy_count": "CONSTANT 0 \u2014 DQI-001: allergies.patient_id 100% null",
+    "has_drug_allergy": "CONSTANT 0 \u2014 DQI-001: allergies.patient_id 100% null"
+  },
+  "exclusion_rationale": {
+    "discontinued_medication_count": "OMISSION label logic: count(PAML - AML) == OMISSION candidate count",
+    "new_medication_count": "set difference: count(AML - PAML)",
+    "total_medication_count": "union size: |PAML union AML| \u2014 drives polypharmacy_flag indirectly but too correlated with label directly",
+    "pre_admission_medication_count": "PAML size \u2014 directly used in OMISSION detection",
+    "admission_medication_count": "AML size \u2014 directly used in OMISSION/DUPLICATION detection",
+    "potential_duplicate_candidates": "DUPLICATION label logic: count(codes with freq>=2 in AML)"
+  },
+  "note": "Model may only receive features listed in safe_features. Any forbidden_feature in input triggers inference failure."
+}

@@ -1,0 +1,458 @@
+{
+  "model_version": "model-0.3.0",
+  "label_version": "labels-3.0.0",
+  "feature_version": "features-0.3.0",
+  "best_model": "XGBoost",
+  "best_feature_set": "leakage_safe",
+  "target": "has_discrepancy",
+  "label_strategy": "encounter_level_structural_discrepancy_detection",
+  "selection_metric": "top_20_recall (primary), pr_auc (tiebreaker) -- validation set",
+  "note": "Labels are SYNTHETIC ENGINEERING TARGETS derived from Synthea longitudinal medication data. NOT clinical ground truth. Software correctness (231 tests) != ML validity != clinical validation. ML used for admission-review prioritization, NOT diagnosis or therapy decisions.",
+  "prevalence": {
+    "case_level_pos_pct": 0.5182,
+    "encounter_level_pos_pct": 0.763,
+    "patient_level_pos_pct": 0.8362,
+    "pct_natural": 0.6516,
+    "pct_artificial": 0.3484
+  },
+  "split": {
+    "train": {
+      "n": 21816,
+      "pos": 16553,
+      "pct_pos": 0.7588
+    },
+    "val": {
+      "n": 5076,
+      "pos": 3988,
+      "pct_pos": 0.7857
+    },
+    "test": {
+      "n": 4733,
+      "pos": 3590,
+      "pct_pos": 0.7585
+    }
+  },
+  "validation": [
+    {
+      "label": "LogReg",
+      "n": 5076,
+      "n_pos": 3988,
+      "n_neg": 1088,
+      "prevalence": 0.7857,
+      "roc_auc": 0.8396,
+      "pr_auc": 0.9576,
+      "f1": 0.7879,
+      "prec": 0.9879,
+      "rec": 0.6552,
+      "brier": 0.1623,
+      "top_10pct": {
+        "k": 507,
+        "captured": 507,
+        "recall": 0.1271,
+        "precision": 1.0,
+        "lift_recall": 1.2713
+      },
+      "top_20pct": {
+        "k": 1015,
+        "captured": 1015,
+        "recall": 0.2545,
+        "precision": 1.0,
+        "lift_recall": 1.2726
+      },
+      "top_30pct": {
+        "k": 1522,
+        "captured": 1522,
+        "recall": 0.3816,
+        "precision": 1.0,
+        "lift_recall": 1.2721
+      }
+    },
+    {
+      "label": "RandomForest",
+      "n": 5076,
+      "n_pos": 3988,
+      "n_neg": 1088,
+      "prevalence": 0.7857,
+      "roc_auc": 0.8891,
+      "pr_auc": 0.9696,
+      "f1": 0.826,
+      "prec": 0.9715,
+      "rec": 0.7184,
+      "brier": 0.1386,
+      "top_10pct": {
+        "k": 507,
+        "captured": 507,
+        "recall": 0.1271,
+        "precision": 1.0,
+        "lift_recall": 1.2713
+      },
+      "top_20pct": {
+        "k": 1015,
+        "captured": 1015,
+        "recall": 0.2545,
+        "precision": 1.0,
+        "lift_recall": 1.2726
+      },
+      "top_30pct": {
+        "k": 1522,
+        "captured": 1522,
+        "recall": 0.3816,
+        "precision": 1.0,
+        "lift_recall": 1.2721
+      }
+    },
+    {
+      "label": "XGBoost",
+      "n": 5076,
+      "n_pos": 3988,
+      "n_neg": 1088,
+      "prevalence": 0.7857,
+      "roc_auc": 0.8938,
+      "pr_auc": 0.9705,
+      "f1": 0.8275,
+      "prec": 0.9488,
+      "rec": 0.7337,
+      "brier": 0.1336,
+      "top_10pct": {
+        "k": 507,
+        "captured": 507,
+        "recall": 0.1271,
+        "precision": 1.0,
+        "lift_recall": 1.2713
+      },
+      "top_20pct": {
+        "k": 1015,
+        "captured": 1015,
+        "recall": 0.2545,
+        "precision": 1.0,
+        "lift_recall": 1.2726
+      },
+      "top_30pct": {
+        "k": 1522,
+        "captured": 1522,
+        "recall": 0.3816,
+        "precision": 1.0,
+        "lift_recall": 1.2721
+      }
+    }
+  ],
+  "test_leakage_safe": [
+    {
+      "label": "LogReg",
+      "n": 4733,
+      "n_pos": 3590,
+      "n_neg": 1143,
+      "prevalence": 0.7585,
+      "roc_auc": 0.8251,
+      "pr_auc": 0.9462,
+      "f1": 0.758,
+      "prec": 0.9595,
+      "rec": 0.6265,
+      "brier": 0.1722,
+      "top10_rec": 0.1318,
+      "top20_rec": 0.2635,
+      "top30_rec": 0.3953,
+      "top_10pct": {
+        "k": 473,
+        "captured": 473,
+        "recall": 0.1318,
+        "precision": 1.0,
+        "lift_recall": 1.3175
+      },
+      "top_20pct": {
+        "k": 946,
+        "captured": 946,
+        "recall": 0.2635,
+        "precision": 1.0,
+        "lift_recall": 1.3175
+      },
+      "top_30pct": {
+        "k": 1419,
+        "captured": 1419,
+        "recall": 0.3953,
+        "precision": 1.0,
+        "lift_recall": 1.3175
+      }
+    },
+    {
+      "label": "RandomForest",
+      "n": 4733,
+      "n_pos": 3590,
+      "n_neg": 1143,
+      "prevalence": 0.7585,
+      "roc_auc": 0.8934,
+      "pr_auc": 0.9657,
+      "f1": 0.8117,
+      "prec": 0.9558,
+      "rec": 0.7053,
+      "brier": 0.1415,
+      "top10_rec": 0.1318,
+      "top20_rec": 0.2635,
+      "top30_rec": 0.3953,
+      "top_10pct": {
+        "k": 473,
+        "captured": 473,
+        "recall": 0.1318,
+        "precision": 1.0,
+        "lift_recall": 1.3175
+      },
+      "top_20pct": {
+        "k": 946,
+        "captured": 946,
+        "recall": 0.2635,
+        "precision": 1.0,
+        "lift_recall": 1.3175
+      },
+      "top_30pct": {
+        "k": 1419,
+        "captured": 1419,
+        "recall": 0.3953,
+        "precision": 1.0,
+        "lift_recall": 1.3175
+      }
+    },
+    {
+      "label": "XGBoost",
+      "n": 4733,
+      "n_pos": 3590,
+      "n_neg": 1143,
+      "prevalence": 0.7585,
+      "roc_auc": 0.8967,
+      "pr_auc": 0.9666,
+      "f1": 0.841,
+      "prec": 0.9454,
+      "rec": 0.7574,
+      "brier": 0.1322,
+      "top10_rec": 0.1318,
+      "top20_rec": 0.2635,
+      "top30_rec": 0.3953,
+      "top_10pct": {
+        "k": 473,
+        "captured": 473,
+        "recall": 0.1318,
+        "precision": 1.0,
+        "lift_recall": 1.3175
+      },
+      "top_20pct": {
+        "k": 946,
+        "captured": 946,
+        "recall": 0.2635,
+        "precision": 1.0,
+        "lift_recall": 1.3175
+      },
+      "top_30pct": {
+        "k": 1419,
+        "captured": 1419,
+        "recall": 0.3953,
+        "precision": 1.0,
+        "lift_recall": 1.3175
+      }
+    }
+  ],
+  "test_calibrated": [
+    {
+      "label": "LogReg_cal",
+      "n": 4733,
+      "n_pos": 3590,
+      "n_neg": 1143,
+      "prevalence": 0.7585,
+      "roc_auc": 0.8192,
+      "pr_auc": 0.9327,
+      "f1": 0.857,
+      "prec": 0.7802,
+      "rec": 0.9504,
+      "brier": 0.1383,
+      "top_10pct": {
+        "k": 473,
+        "captured": 470,
+        "recall": 0.1309,
+        "precision": 0.9937,
+        "lift_recall": 1.3092
+      },
+      "top_20pct": {
+        "k": 946,
+        "captured": 943,
+        "recall": 0.2627,
+        "precision": 0.9968,
+        "lift_recall": 1.3134
+      },
+      "top_30pct": {
+        "k": 1419,
+        "captured": 1416,
+        "recall": 0.3944,
+        "precision": 0.9979,
+        "lift_recall": 1.3148
+      }
+    },
+    {
+      "label": "RandomForest_cal",
+      "n": 4733,
+      "n_pos": 3590,
+      "n_neg": 1143,
+      "prevalence": 0.7585,
+      "roc_auc": 0.8877,
+      "pr_auc": 0.955,
+      "f1": 0.8951,
+      "prec": 0.8449,
+      "rec": 0.9515,
+      "brier": 0.111,
+      "top_10pct": {
+        "k": 473,
+        "captured": 473,
+        "recall": 0.1318,
+        "precision": 1.0,
+        "lift_recall": 1.3175
+      },
+      "top_20pct": {
+        "k": 946,
+        "captured": 946,
+        "recall": 0.2635,
+        "precision": 1.0,
+        "lift_recall": 1.3175
+      },
+      "top_30pct": {
+        "k": 1419,
+        "captured": 1419,
+        "recall": 0.3953,
+        "precision": 1.0,
+        "lift_recall": 1.3175
+      }
+    },
+    {
+      "label": "XGBoost_cal",
+      "n": 4733,
+      "n_pos": 3590,
+      "n_neg": 1143,
+      "prevalence": 0.7585,
+      "roc_auc": 0.8899,
+      "pr_auc": 0.9582,
+      "f1": 0.8943,
+      "prec": 0.8572,
+      "rec": 0.9348,
+      "brier": 0.1116,
+      "top_10pct": {
+        "k": 473,
+        "captured": 473,
+        "recall": 0.1318,
+        "precision": 1.0,
+        "lift_recall": 1.3175
+      },
+      "top_20pct": {
+        "k": 946,
+        "captured": 946,
+        "recall": 0.2635,
+        "precision": 1.0,
+        "lift_recall": 1.3175
+      },
+      "top_30pct": {
+        "k": 1419,
+        "captured": 1419,
+        "recall": 0.3953,
+        "precision": 1.0,
+        "lift_recall": 1.3175
+      }
+    }
+  ],
+  "cv_repeated": {
+    "n_folds": 5,
+    "n_repeats": 5,
+    "feature_set": "leakage_safe",
+    "results": {
+      "LogReg": {
+        "roc_mean": 0.8258,
+        "roc_sd": 0.0142,
+        "roc_ci95": [
+          0.8202,
+          0.8313
+        ],
+        "t20r_mean": 0.2622,
+        "t20r_sd": 0.004,
+        "pr_mean": 0.9472,
+        "pr_sd": 0.007,
+        "n_folds": 25
+      },
+      "RandomForest": {
+        "roc_mean": 0.8839,
+        "roc_sd": 0.0113,
+        "roc_ci95": [
+          0.8795,
+          0.8883
+        ],
+        "t20r_mean": 0.2622,
+        "t20r_sd": 0.004,
+        "pr_mean": 0.9634,
+        "pr_sd": 0.0055,
+        "n_folds": 25
+      },
+      "XGBoost": {
+        "roc_mean": 0.887,
+        "roc_sd": 0.0122,
+        "roc_ci95": [
+          0.8822,
+          0.8918
+        ],
+        "t20r_mean": 0.2622,
+        "t20r_sd": 0.004,
+        "pr_mean": 0.9641,
+        "pr_sd": 0.0058,
+        "n_folds": 25
+      }
+    }
+  },
+  "permutation_test": {
+    "n_permutations": 1000,
+    "model": "XGBoost",
+    "original_roc_auc": 0.8967,
+    "perm_mean": 0.5257,
+    "perm_sd": 0.0317,
+    "perm_max": 0.6149,
+    "empirical_p_value": 0.0,
+    "sigmas_above_mean": 11.72
+  },
+  "feature_manifest": {
+    "version": "features-0.3.0",
+    "label_version": "labels-3.0.0",
+    "safe_features": [
+      "age",
+      "age_65_plus",
+      "gender_encoded",
+      "polypharmacy_flag",
+      "high_alert_flag",
+      "high_alert_count",
+      "active_condition_count",
+      "prior_encounter_count",
+      "allergy_count",
+      "has_drug_allergy"
+    ],
+    "forbidden_features": [
+      "discontinued_medication_count",
+      "new_medication_count",
+      "total_medication_count",
+      "pre_admission_medication_count",
+      "admission_medication_count",
+      "potential_duplicate_candidates"
+    ],
+    "feature_provenance": {
+      "age": "demographics \u2014 available at admission registration",
+      "age_65_plus": "derived: age >= 65 \u2014 available at registration",
+      "gender_encoded": "demographics \u2014 available at registration",
+      "polypharmacy_flag": "binary(total_med_count>=5) from admission orders \u2014 known at admission; NOT a set difference result",
+      "high_alert_flag": "any high-alert medication in pre+admission scan \u2014 known at admission",
+      "high_alert_count": "count of high-alert medications \u2014 known at admission",
+      "active_condition_count": "EHR active diagnoses at encounter_start",
+      "prior_encounter_count": "count of prior hospital encounters before this admission",
+      "allergy_count": "CONSTANT 0 \u2014 DQI-001: allergies.patient_id 100% null",
+      "has_drug_allergy": "CONSTANT 0 \u2014 DQI-001: allergies.patient_id 100% null"
+    },
+    "exclusion_rationale": {
+      "discontinued_medication_count": "OMISSION label logic: count(PAML - AML) == OMISSION candidate count",
+      "new_medication_count": "set difference: count(AML - PAML)",
+      "total_medication_count": "union size: |PAML union AML| \u2014 drives polypharmacy_flag indirectly but too correlated with label directly",
+      "pre_admission_medication_count": "PAML size \u2014 directly used in OMISSION detection",
+      "admission_medication_count": "AML size \u2014 directly used in OMISSION/DUPLICATION detection",
+      "potential_duplicate_candidates": "DUPLICATION label logic: count(codes with freq>=2 in AML)"
+    },
+    "note": "Model may only receive features listed in safe_features. Any forbidden_feature in input triggers inference failure."
+  },
+  "training_date": "2026-10-06T09:44:43.161663Z"
+}

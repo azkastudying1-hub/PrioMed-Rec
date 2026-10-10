@@ -1,0 +1,23 @@
+{
+  "version": "0.1.0",
+  "status": "NEEDS_CLINICAL_VERIFICATION",
+  "note": "Preliminary list based on common high-alert medication categories. Must be reviewed and validated by a clinical pharmacist before production use.",
+  "source": "ISMP High-Alert Medications categories (reference only — not an official list)",
+  "medications": [
+    {"name": "warfarin",      "rxnorm_keywords": ["warfarin", "coumadin"],                  "category": "anticoagulant"},
+    {"name": "heparin",       "rxnorm_keywords": ["heparin"],                               "category": "anticoagulant"},
+    {"name": "insulin",       "rxnorm_keywords": ["insulin"],                               "category": "antidiabetic"},
+    {"name": "methotrexate",  "rxnorm_keywords": ["methotrexate"],                          "category": "antineoplastic_immunosuppressant"},
+    {"name": "morphine",      "rxnorm_keywords": ["morphine"],                              "category": "opioid"},
+    {"name": "oxycodone",     "rxnorm_keywords": ["oxycodone"],                             "category": "opioid"},
+    {"name": "hydromorphone", "rxnorm_keywords": ["hydromorphone", "dilaudid"],             "category": "opioid"},
+    {"name": "fentanyl",      "rxnorm_keywords": ["fentanyl"],                              "category": "opioid"},
+    {"name": "lithium",       "rxnorm_keywords": ["lithium"],                               "category": "narrow_therapeutic_index"},
+    {"name": "digoxin",       "rxnorm_keywords": ["digoxin"],                               "category": "narrow_therapeutic_index"},
+    {"name": "phenytoin",     "rxnorm_keywords": ["phenytoin", "dilantin"],                 "category": "narrow_therapeutic_index"},
+    {"name": "amiodarone",    "rxnorm_keywords": ["amiodarone"],                            "category": "antiarrhythmic"},
+    {"name": "potassium chloride", "rxnorm_keywords": ["potassium chloride"],               "category": "electrolyte_concentrated"},
+    {"name": "concentrated sodium chloride", "rxnorm_keywords": ["sodium chloride 3%"],    "category": "electrolyte_concentrated"},
+    {"name": "chemotherapy",  "rxnorm_keywords": ["cyclophosphamide", "cisplatin", "vincristine", "doxorubicin"], "category": "antineoplastic"}
+  ]
+}

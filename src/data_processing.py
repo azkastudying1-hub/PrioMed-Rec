@@ -1,0 +1,1 @@
+"""Skrip pemrosesan data Synthea."""

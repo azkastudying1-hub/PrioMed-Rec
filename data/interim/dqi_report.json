@@ -1,0 +1,544 @@
+{
+  "priomed_rec_version": "0.1.0",
+  "audit_source": "D:\\Hacktiv8\\priomed-rec\\data\\raw\\synthea",
+  "row_counts": {
+    "patients": 17286,
+    "encounters": 488422,
+    "medications": 319329,
+    "medication_requests": 885606,
+    "medication_administrations": 319329,
+    "conditions": 631452,
+    "allergies": 15802,
+    "primedrec_master": 488422,
+    "primedrec_risk_features": 488422
+  },
+  "validation_report_row": {
+    "expected_patients": 17286,
+    "patient_rows": 17286,
+    "unique_patients": 17286,
+    "encounter_rows": 488422,
+    "unique_encounters": 488422,
+    "medication_request_rows": 885606,
+    "medication_administration_rows": 319329,
+    "condition_rows": 631452,
+    "allergy_rows": 15802,
+    "observation_rows": 9129492,
+    "parser_errors": 0
+  },
+  "null_rate_reports": [
+    {
+      "table": "patients",
+      "row_count": 17286,
+      "columns": {
+        "patient_id": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "patient_name": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "gender": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "birth_date": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "deceased_date": {
+          "null_count": 15000,
+          "null_rate": 0.867754
+        },
+        "marital_status": {
+          "null_count": 0,
+          "null_rate": 0.0
+        }
+      }
+    },
+    {
+      "table": "encounters",
+      "row_count": 488422,
+      "columns": {
+        "encounter_id": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "patient_id": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "encounter_start": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "encounter_end": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "encounter_class": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "encounter_class_display": {
+          "null_count": 488422,
+          "null_rate": 1.0
+        },
+        "encounter_type": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "encounter_type_code": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "reason": {
+          "null_count": 178877,
+          "null_rate": 0.366235
+        }
+      }
+    },
+    {
+      "table": "medications",
+      "row_count": 319329,
+      "columns": {
+        "medication_id": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "medication_name": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "medication_code": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "medication_system": {
+          "null_count": 0,
+          "null_rate": 0.0
+        }
+      }
+    },
+    {
+      "table": "medication_requests",
+      "row_count": 885606,
+      "columns": {
+        "medication_request_id": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "patient_id": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "encounter_id": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "medication_name": {
+          "null_count": 319329,
+          "null_rate": 0.360577
+        },
+        "medication_code": {
+          "null_count": 319329,
+          "null_rate": 0.360577
+        },
+        "medication_system": {
+          "null_count": 319329,
+          "null_rate": 0.360577
+        },
+        "dose_value": {
+          "null_count": 597372,
+          "null_rate": 0.674535
+        },
+        "dose_unit": {
+          "null_count": 885606,
+          "null_rate": 1.0
+        },
+        "frequency": {
+          "null_count": 885606,
+          "null_rate": 1.0
+        },
+        "timing_text": {
+          "null_count": 885606,
+          "null_rate": 1.0
+        },
+        "route": {
+          "null_count": 885606,
+          "null_rate": 1.0
+        },
+        "status": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "intent": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "authored_on": {
+          "null_count": 0,
+          "null_rate": 0.0
+        }
+      }
+    },
+    {
+      "table": "medication_administrations",
+      "row_count": 319329,
+      "columns": {
+        "medication_administration_id": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "patient_id": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "encounter_id": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "medication_name": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "medication_code": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "effective_datetime": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "dose_value": {
+          "null_count": 316017,
+          "null_rate": 0.989628
+        },
+        "dose_unit": {
+          "null_count": 319329,
+          "null_rate": 1.0
+        },
+        "route": {
+          "null_count": 319329,
+          "null_rate": 1.0
+        },
+        "status": {
+          "null_count": 0,
+          "null_rate": 0.0
+        }
+      }
+    },
+    {
+      "table": "conditions",
+      "row_count": 631452,
+      "columns": {
+        "condition_id": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "patient_id": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "encounter_id": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "condition_name": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "condition_code": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "onset_date": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "clinical_status": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "verification_status": {
+          "null_count": 0,
+          "null_rate": 0.0
+        }
+      }
+    },
+    {
+      "table": "allergies",
+      "row_count": 15802,
+      "columns": {
+        "allergy_id": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "patient_id": {
+          "null_count": 15802,
+          "null_rate": 1.0
+        },
+        "allergy_name": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "allergy_code": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "clinical_status": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "verification_status": {
+          "null_count": 0,
+          "null_rate": 0.0
+        }
+      }
+    },
+    {
+      "table": "primedrec_master",
+      "row_count": 488422,
+      "columns": {
+        "encounter_id": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "patient_id": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "encounter_start_x": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "birth_date_x": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "age": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "age_65_plus": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "medication_count": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "polypharmacy": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "high_alert_medication": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "encounter_start_y": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "encounter_end": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "encounter_class": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "encounter_class_display": {
+          "null_count": 488422,
+          "null_rate": 1.0
+        },
+        "encounter_type": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "encounter_type_code": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "reason": {
+          "null_count": 178877,
+          "null_rate": 0.366235
+        },
+        "gender": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "birth_date_y": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "deceased_date": {
+          "null_count": 339711,
+          "null_rate": 0.695528
+        }
+      }
+    },
+    {
+      "table": "primedrec_risk_features",
+      "row_count": 488422,
+      "columns": {
+        "encounter_id": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "patient_id": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "encounter_start": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "birth_date": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "age": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "age_65_plus": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "medication_count": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "polypharmacy": {
+          "null_count": 0,
+          "null_rate": 0.0
+        },
+        "high_alert_medication": {
+          "null_count": 0,
+          "null_rate": 0.0
+        }
+      }
+    }
+  ],
+  "referential_integrity": [
+    {
+      "check": "encounters.patient_id \u2192 patients.patient_id",
+      "orphan_count": 0,
+      "orphan_rate": 0.0,
+      "orphan_examples": [],
+      "passed": true
+    },
+    {
+      "check": "medication_requests.patient_id \u2192 patients.patient_id",
+      "orphan_count": 0,
+      "orphan_rate": 0.0,
+      "orphan_examples": [],
+      "passed": true
+    },
+    {
+      "check": "medication_requests.encounter_id \u2192 encounters.encounter_id",
+      "orphan_count": 450480,
+      "orphan_rate": 0.508669,
+      "orphan_examples": [
+        "6d1f8fa9-1f0f-7c2a-752d-77d4fe961adf",
+        "6d1f8fa9-1f0f-7c2a-3e63-74c943053432",
+        "6d1f8fa9-1f0f-7c2a-f61c-751756a42295",
+        "6d1f8fa9-1f0f-7c2a-9af0-e876fa432613",
+        "6d1f8fa9-1f0f-7c2a-bed3-5d66469ce3ee"
+      ],
+      "passed": false
+    },
+    {
+      "check": "medication_administrations.patient_id \u2192 patients.patient_id",
+      "orphan_count": 0,
+      "orphan_rate": 0.0,
+      "orphan_examples": [],
+      "passed": true
+    },
+    {
+      "check": "conditions.patient_id \u2192 patients.patient_id",
+      "orphan_count": 0,
+      "orphan_rate": 0.0,
+      "orphan_examples": [],
+      "passed": true
+    },
+    {
+      "check": "allergies.patient_id \u2192 patients.patient_id",
+      "orphan_count": 0,
+      "orphan_rate": 0.0,
+      "orphan_examples": [],
+      "passed": true
+    }
+  ],
+  "encoding_checks": [
+    {
+      "file": "patients.csv",
+      "has_bom": true,
+      "readable": true
+    },
+    {
+      "file": "encounters.csv",
+      "has_bom": true,
+      "readable": true
+    },
+    {
+      "file": "medications.csv",
+      "has_bom": true,
+      "readable": true
+    },
+    {
+      "file": "medication_requests.csv",
+      "has_bom": true,
+      "readable": true
+    },
+    {
+      "file": "medication_administrations.csv",
+      "has_bom": true,
+      "readable": true
+    },
+    {
+      "file": "conditions.csv",
+      "has_bom": true,
+      "readable": true
+    },
+    {
+      "file": "allergies.csv",
+      "has_bom": true,
+      "readable": true
+    },
+    {
+      "file": "primedrec_master.csv",
+      "has_bom": true,
+      "readable": true
+    },
+    {
+      "file": "primedrec_risk_features.csv",
+      "has_bom": true,
+      "readable": true
+    },
+    {
+      "file": "validation_report.csv",
+      "has_bom": false,
+      "readable": true
+    }
+  ],
+  "duplicate_column_checks": [
+    {
+      "table": "primedrec_master",
+      "duplicate_pairs": [
+        {
+          "base": "encounter_start",
+          "col_x": "encounter_start_x",
+          "col_y": "encounter_start_y"
+        },
+        {
+          "base": "birth_date",
+          "col_x": "birth_date_x",
+          "col_y": "birth_date_y"
+        }
+      ],
+      "pair_count": 2
+    }
+  ]
+}
