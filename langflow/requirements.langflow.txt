@@ -1,0 +1,2 @@
+# LF-001 intentionally has no extra packages.
+# LF-002/LF-003 add only pinned requirements after the image compatibility spike.
