@@ -1,0 +1,87 @@
+{
+  "rule_version": "rules-0.2.0",
+  "status": "DRAFT_PERLU_VALIDASI_APOTEKER",
+  "owner": "TBD-apoteker",
+  "description": "Aturan reaksi silang kelas obat berdasarkan alergi pasien. DRAFT — wajib divalidasi apoteker klinis sebelum digunakan dalam lingkungan klinis nyata.",
+  "cross_reactivity_classes": {
+    "beta_lactams_penicillin": {
+      "status": "DRAFT_PERLU_VALIDASI_APOTEKER",
+      "owner": "TBD-apoteker",
+      "description": "Penisilin dan turunannya — risiko reaksi silang dengan sefalosporin ~1-2%",
+      "allergen_keywords": ["penicillin", "penisilin", "amoxicillin", "amoksisilin", "ampicillin", "ampisilin", "oxacillin", "cloxacillin", "piperacillin", "amoxicillin-clavulanate", "amoksisilin-klavulanat", "co-amoxiclav"],
+      "cross_react_with": ["cephalosporins"],
+      "severity_tier": 2,
+      "alert_message": "Pasien memiliki alergi penisilin — risiko reaksi silang dengan antibiotik sefalosporin (sekitar 1-2%). Verifikasi riwayat alergi secara klinis."
+    },
+    "cephalosporins": {
+      "status": "DRAFT_PERLU_VALIDASI_APOTEKER",
+      "owner": "TBD-apoteker",
+      "description": "Sefalosporin generasi 1-4",
+      "allergen_keywords": ["cephalexin", "sefaleksin", "cefadroxil", "cefazolin", "cefuroxime", "sefuroksim", "cefixime", "sefiksim", "ceftriaxone", "seftriakson", "cefotaxime", "ceftazidime", "cefepime", "cefpirome"],
+      "cross_react_with": ["beta_lactams_penicillin"],
+      "severity_tier": 2,
+      "alert_message": "Pasien memiliki alergi sefalosporin — risiko reaksi silang dengan penisilin. Verifikasi riwayat alergi."
+    },
+    "sulfonamides": {
+      "status": "DRAFT_PERLU_VALIDASI_APOTEKER",
+      "owner": "TBD-apoteker",
+      "description": "Sulfonamid — perhatikan reaksi silang dengan beberapa diuretik dan sulfonilurea",
+      "allergen_keywords": ["sulfamethoxazole", "sulfametoksazol", "cotrimoxazole", "kotrimoksazol", "trimethoprim-sulfamethoxazole", "trimetoprim-sulfametoksazol", "sulfadiazine"],
+      "cross_react_with": ["sulfa_diuretics", "sulfa_antidiabetics"],
+      "severity_tier": 2,
+      "alert_message": "Pasien memiliki alergi sulfonamid — perhatikan kemungkinan reaksi dengan furosemid, tiazid, atau sulfonilurea. Verifikasi secara klinis."
+    },
+    "sulfa_diuretics": {
+      "status": "DRAFT_PERLU_VALIDASI_APOTEKER",
+      "owner": "TBD-apoteker",
+      "description": "Diuretik mengandung gugus sulfa",
+      "allergen_keywords": ["furosemide", "furosemid", "hydrochlorothiazide", "hidroklorotiazid", "indapamide", "indapamid", "chlorthalidone", "metolazone"],
+      "cross_react_with": ["sulfonamides"],
+      "severity_tier": 2,
+      "alert_message": "Pasien memiliki alergi diuretik sulfa — perhatikan kemungkinan reaksi dengan kotrimoksazol. Verifikasi secara klinis."
+    },
+    "sulfa_antidiabetics": {
+      "status": "DRAFT_PERLU_VALIDASI_APOTEKER",
+      "owner": "TBD-apoteker",
+      "description": "Sulfonilurea antidiabetik",
+      "allergen_keywords": ["glibenclamide", "glibenklamid", "glipizide", "glipizid", "gliclazide", "gliklazid", "glimepiride", "glimepirid"],
+      "cross_react_with": ["sulfonamides"],
+      "severity_tier": 2,
+      "alert_message": "Pasien memiliki alergi sulfonilurea — perhatikan kemungkinan reaksi dengan kotrimoksazol. Verifikasi secara klinis."
+    },
+    "nsaids": {
+      "status": "DRAFT_PERLU_VALIDASI_APOTEKER",
+      "owner": "TBD-apoteker",
+      "description": "NSAID — risiko reaksi silang dalam kelas, terutama pada aspirin-exacerbated respiratory disease",
+      "allergen_keywords": ["ibuprofen", "naproxen", "naproksen", "diclofenac", "diklofenak", "mefenamic acid", "asam mefenamat", "meloxicam", "meloksikam", "piroxicam", "piroksikam", "ketoprofen", "celecoxib", "aspirin", "asetosal", "acetylsalicylic acid"],
+      "cross_react_with": ["nsaids"],
+      "severity_tier": 2,
+      "alert_message": "Pasien memiliki alergi NSAID — risiko reaksi silang dengan NSAID lain (terutama jika ada riwayat AERD/aspirin-exacerbated respiratory disease). Verifikasi secara klinis."
+    },
+    "fluoroquinolones": {
+      "status": "DRAFT_PERLU_VALIDASI_APOTEKER",
+      "owner": "TBD-apoteker",
+      "description": "Antibiotik kuinolon — risiko reaksi silang dalam kelas",
+      "allergen_keywords": ["ciprofloxacin", "siprofloksasin", "levofloxacin", "levofloksasin", "moxifloxacin", "moksifloksasin", "ofloxacin", "ofloksasin", "norfloxacin", "norfloksasin"],
+      "cross_react_with": ["fluoroquinolones"],
+      "severity_tier": 2,
+      "alert_message": "Pasien memiliki alergi fluorokuinolon — risiko reaksi silang dengan fluorokuinolon lain. Verifikasi secara klinis."
+    },
+    "contrast_iodine": {
+      "status": "DRAFT_PERLU_VALIDASI_APOTEKER",
+      "owner": "TBD-apoteker",
+      "description": "Kontras iodium — reaksi alergi saat prosedur radiologi",
+      "allergen_keywords": ["iodine contrast", "kontras iodium", "iohexol", "iopamidol", "iodixanol"],
+      "cross_react_with": [],
+      "severity_tier": 2,
+      "alert_message": "Pasien memiliki riwayat reaksi terhadap kontras iodium. Perhatikan jika ada prosedur radiologi direncanakan."
+    }
+  },
+  "direct_drug_allergies": {
+    "description": "Cek langsung obat terhadap daftar alergi pasien",
+    "severity_tier_direct_match": 1,
+    "severity_tier_class_match": 2,
+    "alert_message_direct": "PERINGATAN: Obat yang diorder ({drug_name}) cocok dengan catatan alergi pasien ({allergen}). Konfirmasi apoteker wajib.",
+    "alert_message_class": "PERHATIAN: Obat yang diorder ({drug_name}) mungkin memiliki reaksi silang dengan alergi pasien ({allergen}). Verifikasi klinis diperlukan."
+  }
+}

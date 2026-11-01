@@ -1,0 +1,127 @@
+{
+  "warfarin": "anticoagulant",
+  "heparin": "anticoagulant",
+  "enoxaparin": "anticoagulant",
+  "fondaparinux": "anticoagulant",
+  "rivaroxaban": "anticoagulant",
+  "apixaban": "anticoagulant",
+
+  "captopril": "ace_inhibitor",
+  "enalapril": "ace_inhibitor",
+  "lisinopril": "ace_inhibitor",
+  "ramipril": "ace_inhibitor",
+  "perindopril": "ace_inhibitor",
+
+  "losartan": "arb",
+  "valsartan": "arb",
+  "candesartan": "arb",
+  "irbesartan": "arb",
+  "telmisartan": "arb",
+
+  "amlodipine": "calcium_channel_blocker",
+  "nifedipine": "calcium_channel_blocker",
+  "diltiazem": "calcium_channel_blocker",
+  "verapamil": "calcium_channel_blocker",
+  "nicardipine": "calcium_channel_blocker",
+
+  "bisoprolol": "beta_blocker",
+  "metoprolol": "beta_blocker",
+  "carvedilol": "beta_blocker",
+  "atenolol": "beta_blocker",
+  "propranolol": "beta_blocker",
+
+  "furosemide": "diuretic",
+  "hydrochlorothiazide": "diuretic",
+  "spironolactone": "diuretic",
+  "indapamide": "diuretic",
+
+  "metformin": "biguanide",
+
+  "glibenclamide": "sulfonylurea",
+  "glimepiride": "sulfonylurea",
+  "glipizide": "sulfonylurea",
+  "gliclazide": "sulfonylurea",
+
+  "insulin glargine": "insulin",
+  "insulin aspart": "insulin",
+  "insulin lispro": "insulin",
+  "insulin detemir": "insulin",
+  "insulin regular": "insulin",
+  "insulin nph": "insulin",
+
+  "omeprazole": "proton_pump_inhibitor",
+  "lansoprazole": "proton_pump_inhibitor",
+  "pantoprazole": "proton_pump_inhibitor",
+  "esomeprazole": "proton_pump_inhibitor",
+  "rabeprazole": "proton_pump_inhibitor",
+
+  "simvastatin": "statin",
+  "atorvastatin": "statin",
+  "rosuvastatin": "statin",
+  "pravastatin": "statin",
+
+  "amoxicillin": "penicillin",
+  "ampicillin": "penicillin",
+  "piperacillin": "penicillin",
+  "amoxicillin-clavulanate": "penicillin",
+
+  "ceftriaxone": "cephalosporin",
+  "cefazolin": "cephalosporin",
+  "cefixime": "cephalosporin",
+  "cefotaxime": "cephalosporin",
+  "cefuroxime": "cephalosporin",
+
+  "ciprofloxacin": "fluoroquinolone",
+  "levofloxacin": "fluoroquinolone",
+  "moxifloxacin": "fluoroquinolone",
+
+  "azithromycin": "macrolide",
+  "clarithromycin": "macrolide",
+  "erythromycin": "macrolide",
+
+  "morphine": "opioid",
+  "codeine": "opioid",
+  "tramadol": "opioid",
+  "fentanyl": "opioid",
+  "oxycodone": "opioid",
+
+  "diazepam": "benzodiazepine",
+  "lorazepam": "benzodiazepine",
+  "alprazolam": "benzodiazepine",
+  "midazolam": "benzodiazepine",
+  "clonazepam": "benzodiazepine",
+
+  "ibuprofen": "nsaid",
+  "naproxen": "nsaid",
+  "meloxicam": "nsaid",
+  "diclofenac": "nsaid",
+  "ketorolac": "nsaid",
+  "celecoxib": "nsaid",
+
+  "dexamethasone": "corticosteroid",
+  "methylprednisolone": "corticosteroid",
+  "prednisone": "corticosteroid",
+  "hydrocortisone": "corticosteroid",
+  "prednisolone": "corticosteroid",
+  "betamethasone": "corticosteroid",
+
+  "phenytoin": "antiepileptic",
+  "carbamazepine": "antiepileptic",
+  "valproic acid": "antiepileptic",
+  "phenobarbital": "antiepileptic",
+  "levetiracetam": "antiepileptic",
+  "gabapentin": "antiepileptic",
+
+  "aspirin": "antiplatelet",
+  "clopidogrel": "antiplatelet",
+  "ticagrelor": "antiplatelet",
+  "prasugrel": "antiplatelet",
+
+  "salbutamol": "bronchodilator",
+  "terbutaline": "bronchodilator",
+  "ipratropium": "bronchodilator",
+  "tiotropium": "bronchodilator",
+  "formoterol": "bronchodilator",
+  "salmeterol": "bronchodilator",
+  "theophylline": "bronchodilator"
+}

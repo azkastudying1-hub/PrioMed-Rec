@@ -1,6 +1,10 @@
 # Architecture — PrioMed-Rec
 
-**Version:** 2.0.0
+> **STATUS: SUPERSEDED.** Dokumen ini mendeskripsikan arsitektur legacy Streamlit-first.
+> Arsitektur aktual: **React/Vite → FastAPI → Langflow → internal deterministic API → verifier**.
+> Lihat `docs/WEBSITE_RUNBOOK.md` dan `docs/PANDUAN_MENJALANKAN_DAN_MENGGUNAKAN_APLIKASI.md`.
+
+**Version:** 3.0.0 (Langflow-first)
 **Last updated:** See `docs/DECISION_LOG.md`
 
 ---

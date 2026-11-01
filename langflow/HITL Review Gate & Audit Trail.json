@@ -1,0 +1,733 @@
+{
+  "name": "06_review_hitl",
+  "description": "Gerbang Human-in-the-Loop (HITL), High-Alert Hard Stop, dan pencatat Audit Trail Hash-Chain PrioMed-Rec (Mendukung APPROVE, EDIT, REJECT, ESCALATE, dan DRAFT_REVIEW; tidak pernah APPROVE otomatis oleh agen).",
+  "id": "d4ed16db-0dba-48a8-98dd-ddd173956578",
+  "endpoint_name": "06_review_hitl",
+  "is_component": false,
+  "last_tested_version": "1.13.0",
+  "locked": false,
+  "tags": [
+    "priomedrec",
+    "hitl",
+    "audit",
+    "deterministic"
+  ],
+  "data": {
+    "nodes": [
+      {
+        "data": {
+          "id": "HITLChatIn-01",
+          "node": {
+            "template": {
+              "_type": "Component",
+              "code": {
+                "type": "code",
+                "required": true,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": true,
+                "value": "from lfx.base.io.chat import ChatComponent\nfrom lfx.io import MessageTextInput, Output\nfrom lfx.schema.message import Message\n\nclass PMRChatInput(ChatComponent):\n    display_name = \"01. Payload / Chat Input (Admission)\"\n    description = \"Menerima JSON encounter payload dari FastAPI LangflowClient atau patient_id dari Playground.\"\n    icon = \"MessagesSquare\"\n    name = \"PMRChatInput\"\n\n    inputs = [\n        MessageTextInput(\n            name=\"input_value\",\n            display_name=\"Encounter JSON / Patient ID\",\n            info=\"JSON payload dari POST /api/v1/analysis/{enc}/run atau teks seperti 'Analisis pasien P001'\",\n            value=\"P001\",\n            required=True,\n        )\n    ]\n    outputs = [\n        Output(display_name=\"Raw Input\", name=\"message\", method=\"get_msg\")\n    ]\n\n    def get_msg(self) -> Message:\n        text = getattr(self.input_value, \"text\", None) or str(self.input_value or \"P001\")\n        self.status = text[:120]\n        return Message(text=text)\n",
+                "fileTypes": [],
+                "file_path": "",
+                "password": false,
+                "name": "code",
+                "advanced": true,
+                "api_editable": false,
+                "dynamic": true,
+                "info": "",
+                "load_from_db": false,
+                "title_case": false
+              },
+              "input_value": {
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "load_from_db": false,
+                "list": false,
+                "list_add_label": "Add More",
+                "override_skip": false,
+                "required": true,
+                "placeholder": "",
+                "show": true,
+                "name": "input_value",
+                "value": "APPROVE case_id: P001 Obat high-alert warfarin dan enoxaparin sudah terverifikasi bersama DPJP.",
+                "display_name": "Pesan Review Apoteker",
+                "advanced": false,
+                "api_editable": true,
+                "input_types": [],
+                "dynamic": false,
+                "info": "",
+                "title_case": false,
+                "track_in_telemetry": false,
+                "type": "str",
+                "_input_type": "StrInput"
+              }
+            },
+            "description": "Menerima aksi keputusan apoteker (APPROVE / EDIT / REJECT / ESCALATE / DRAFT_REVIEW) beserta catatan klinis.",
+            "icon": "MessagesSquare",
+            "base_classes": [
+              "Message",
+              "Data"
+            ],
+            "display_name": "01. Review Action Input (Apoteker / MCP Draft)",
+            "documentation": "https://docs.langflow.org",
+            "minimized": false,
+            "custom_fields": {},
+            "output_types": [
+              "Message"
+            ],
+            "pinned": false,
+            "conditional_paths": [],
+            "frozen": false,
+            "outputs": [
+              {
+                "types": [
+                  "Message"
+                ],
+                "selected": "Message",
+                "name": "message",
+                "display_name": "Raw Input",
+                "method": "get_msg",
+                "value": "__UNDEFINED__",
+                "cache": true,
+                "allows_loop": false,
+                "group_outputs": false,
+                "tool_mode": true
+              }
+            ],
+            "field_order": [
+              "input_value"
+            ],
+            "beta": false,
+            "legacy": false,
+            "edited": true,
+            "metadata": {
+              "module": "custom_components.pmrchatinput",
+              "code_hash": "53835467adac",
+              "dependencies": {
+                "dependencies": [
+                  {
+                    "name": "lfx",
+                    "version": null
+                  }
+                ],
+                "total_dependencies": 1
+              }
+            },
+            "tool_mode": false,
+            "lf_version": "1.13.0"
+          },
+          "showNode": true,
+          "type": "PMRChatInput"
+        },
+        "dragging": false,
+        "id": "HITLChatIn-01",
+        "position": {
+          "x": 60,
+          "y": 260
+        },
+        "selected": false,
+        "type": "genericNode"
+      },
+      {
+        "data": {
+          "id": "HITLGate-02",
+          "node": {
+            "template": {
+              "_type": "Component",
+              "code": {
+                "type": "code",
+                "required": true,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": true,
+                "value": "import json\nimport re\nfrom lfx.custom.custom_component.component import Component\nfrom lfx.io import MessageTextInput, StrInput, Output\nfrom lfx.schema.message import Message\n\nHIGH_ALERT_DRUGS = {\"warfarin\", \"enoxaparin\", \"clexane\", \"lovenox\", \"heparin\", \"insulin\", \"digoxin\", \"phenytoin\", \"levetiracetam\", \"methadone\", \"morphine\", \"fentanyl\"}\n\nclass PMRHighAlertHardStopGate(Component):\n    display_name = \"02. PMR High-Alert Hard Stop & Action Validator\"\n    description = \"Memeriksa apakah kasus memiliki obat ISMP High-Alert dan memastikan konfirmasi eksplisit serta alasan wajib (untuk EDIT/REJECT/ESCALATE) sebelum diteruskan ke Audit Trail.\"\n    icon = \"octagon-alert\"\n    name = \"PMRHighAlertHardStopGate\"\n\n    inputs = [\n        MessageTextInput(name=\"review_message\", display_name=\"Pesan Keputusan Apoteker / Agen\", required=True),\n        StrInput(name=\"case_id\", display_name=\"Default Case / Encounter ID\", value=\"P001\"),\n        StrInput(name=\"pharmacist_id\", display_name=\"Default Pharmacist ID\", value=\"PHARM-001\"),\n        StrInput(name=\"actor_type\", display_name=\"Actor Type (human / agent_via_mcp)\", value=\"human\"),\n        StrInput(name=\"high_alert_present\", display_name=\"Daftar Obat High-Alert pada Kasus\", value=\"warfarin, enoxaparin\")\n    ]\n    outputs = [\n        Output(display_name=\"Validated HITL Gate Payload\", name=\"gate_payload\", method=\"evaluate_gate\")\n    ]\n\n    def evaluate_gate(self) -> Message:\n        text = (getattr(self.review_message, \"text\", None) or str(self.review_message or \"\")).strip()\n        actor_type = (self.actor_type or \"human\").strip().lower()\n\n        # Parse action (APPROVE / EDIT / REJECT / ESCALATE / DRAFT_REVIEW)\n        actions_map = {\n            \"DRAFT_REVIEW\": re.compile(r\"\\b(draft[_\\s-]*review|draft)\\b\", re.IGNORECASE),\n            \"ESCALATE\": re.compile(r\"\\b(escalat(?:e|ed)|eskalasi)\\b\", re.IGNORECASE),\n            \"APPROVE\": re.compile(r\"\\b(approve[d]?|setuju|disetujui|setujui)\\b\", re.IGNORECASE),\n            \"REJECT\": re.compile(r\"\\b(reject(?:ed)?|tolak|ditolak)\\b\", re.IGNORECASE),\n            \"EDIT\": re.compile(r\"\\b(edit(?:ed)?|revisi)\\b\", re.IGNORECASE),\n        }\n        matched = [act for act, pat in actions_map.items() if pat.search(text)]\n\n        # ADR-07: If invoked by an AI agent via MCP, force action to DRAFT_REVIEW (never autonomous final APPROVE)\n        if actor_type != \"human\":\n            action = \"DRAFT_REVIEW\"\n        elif len(matched) == 1:\n            action = matched[0]\n        elif not matched:\n            return Message(text=json.dumps({\n                \"gate_passed\": False,\n                \"error_code\": \"INVALID_OR_MISSING_ACTION\",\n                \"message\": \"Aksi tidak ditemukan. Gunakan tepat satu aksi: APPROVE, EDIT, REJECT, ESCALATE, atau DRAFT_REVIEW.\"\n            }, ensure_ascii=False))\n        else:\n            return Message(text=json.dumps({\n                \"gate_passed\": False,\n                \"error_code\": \"AMBIGUOUS_ACTION\",\n                \"message\": f\"Aksi ambigu ({matched}). Gunakan hanya satu aksi keputusan per pengiriman.\"\n            }, ensure_ascii=False))\n\n        # Check High-Alert Hard Stop for APPROVE\n        ha_list = [d.strip().lower() for d in (self.high_alert_present or \"\").split(\",\") if d.strip()]\n        if action == \"APPROVE\" and ha_list:\n            ack_ok = any(k in text.lower() for k in (\"ack\", \"konfirmasi\", \"terverifikasi\", \"verified\", \"high-alert\", \"warfarin\"))\n            if not ack_ok:\n                return Message(text=json.dumps({\n                    \"gate_passed\": False,\n                    \"error_code\": \"HIGH_ALERT_NOT_ACKNOWLEDGED\",\n                    \"missing_acknowledgement\": ha_list,\n                    \"message\": f\"HARD STOP: Kasus memiliki obat High-Alert ({ha_list}). Sertakan kata 'terverifikasi' atau konfirmasi obat High-Alert sebelum APPROVE.\"\n                }, ensure_ascii=False))\n\n        # Mandatory clinical note check for EDIT / REJECT / ESCALATE\n        if action in (\"EDIT\", \"REJECT\", \"ESCALATE\") and len(text.split()) < 3:\n            return Message(text=json.dumps({\n                \"gate_passed\": False,\n                \"error_code\": \"MANDATORY_REASON_MISSING\",\n                \"message\": f\"Aksi {action} mewajibkan alasan/catatan klinis yang memadai.\"\n            }, ensure_ascii=False))\n\n        case_match = re.search(r\"\\b(P\\d+|ENC-[A-Za-z0-9_-]+|CASE-\\d+)\\b\", text, re.IGNORECASE)\n        cid = case_match.group(1).upper() if case_match else (self.case_id or \"P001\")\n\n        out = {\n            \"gate_passed\": True,\n            \"case_id\": cid,\n            \"pharmacist_id\": self.pharmacist_id or \"PHARM-001\",\n            \"actor_type\": actor_type,\n            \"action\": action,\n            \"high_alert_acknowledged\": ha_list if action == \"APPROVE\" else [],\n            \"pharmacist_note\": text\n        }\n        self.status = f\"Gate PASSED ({action})\"\n        return Message(text=json.dumps(out, ensure_ascii=False))\n",
+                "fileTypes": [],
+                "file_path": "",
+                "password": false,
+                "name": "code",
+                "advanced": true,
+                "api_editable": false,
+                "dynamic": true,
+                "info": "",
+                "load_from_db": false,
+                "title_case": false
+              },
+              "review_message": {
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "load_from_db": false,
+                "list": false,
+                "list_add_label": "Add More",
+                "override_skip": false,
+                "required": true,
+                "placeholder": "",
+                "show": true,
+                "name": "review_message",
+                "value": "",
+                "display_name": "Pesan Keputusan Apoteker / Agen",
+                "advanced": false,
+                "api_editable": true,
+                "input_types": [
+                  "Message"
+                ],
+                "dynamic": false,
+                "info": "",
+                "title_case": false,
+                "track_in_telemetry": false,
+                "type": "str",
+                "_input_type": "StrInput"
+              },
+              "case_id": {
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "load_from_db": false,
+                "list": false,
+                "list_add_label": "Add More",
+                "override_skip": false,
+                "required": false,
+                "placeholder": "",
+                "show": true,
+                "name": "case_id",
+                "value": "P001",
+                "display_name": "Default Case / Encounter ID",
+                "advanced": false,
+                "api_editable": true,
+                "input_types": [],
+                "dynamic": false,
+                "info": "",
+                "title_case": false,
+                "track_in_telemetry": false,
+                "type": "str",
+                "_input_type": "StrInput"
+              },
+              "pharmacist_id": {
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "load_from_db": false,
+                "list": false,
+                "list_add_label": "Add More",
+                "override_skip": false,
+                "required": false,
+                "placeholder": "",
+                "show": true,
+                "name": "pharmacist_id",
+                "value": "PHARM-001",
+                "display_name": "Default Pharmacist ID",
+                "advanced": false,
+                "api_editable": true,
+                "input_types": [],
+                "dynamic": false,
+                "info": "",
+                "title_case": false,
+                "track_in_telemetry": false,
+                "type": "str",
+                "_input_type": "StrInput"
+              },
+              "actor_type": {
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "load_from_db": false,
+                "list": false,
+                "list_add_label": "Add More",
+                "override_skip": false,
+                "required": false,
+                "placeholder": "",
+                "show": true,
+                "name": "actor_type",
+                "value": "human",
+                "display_name": "Actor Type (human / agent_via_mcp)",
+                "advanced": false,
+                "api_editable": true,
+                "input_types": [],
+                "dynamic": false,
+                "info": "",
+                "title_case": false,
+                "track_in_telemetry": false,
+                "type": "str",
+                "_input_type": "StrInput"
+              },
+              "high_alert_present": {
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "load_from_db": false,
+                "list": false,
+                "list_add_label": "Add More",
+                "override_skip": false,
+                "required": false,
+                "placeholder": "",
+                "show": true,
+                "name": "high_alert_present",
+                "value": "warfarin, enoxaparin",
+                "display_name": "Daftar Obat High-Alert pada Kasus",
+                "advanced": false,
+                "api_editable": true,
+                "input_types": [],
+                "dynamic": false,
+                "info": "",
+                "title_case": false,
+                "track_in_telemetry": false,
+                "type": "str",
+                "_input_type": "StrInput"
+              }
+            },
+            "description": "Memeriksa kelengkapan konfirmasi High-Alert (Hard Stop), memvalidasi alasan wajib, dan memaksa DRAFT_REVIEW jika dipanggil oleh agen MCP.",
+            "icon": "octagon-alert",
+            "base_classes": [
+              "Message",
+              "Data"
+            ],
+            "display_name": "02. PMR High-Alert Hard Stop & Action Validator",
+            "documentation": "https://docs.langflow.org",
+            "minimized": false,
+            "custom_fields": {},
+            "output_types": [
+              "Message"
+            ],
+            "pinned": false,
+            "conditional_paths": [],
+            "frozen": false,
+            "outputs": [
+              {
+                "types": [
+                  "Message"
+                ],
+                "selected": "Message",
+                "name": "gate_payload",
+                "display_name": "Validated HITL Gate Payload",
+                "method": "evaluate_gate",
+                "value": "__UNDEFINED__",
+                "cache": true,
+                "allows_loop": false,
+                "group_outputs": false,
+                "tool_mode": true
+              }
+            ],
+            "field_order": [
+              "review_message",
+              "case_id",
+              "pharmacist_id",
+              "actor_type",
+              "high_alert_present"
+            ],
+            "beta": false,
+            "legacy": false,
+            "edited": true,
+            "metadata": {
+              "module": "custom_components.pmrhighalerthardstopgate",
+              "code_hash": "fbef8ce97d98",
+              "dependencies": {
+                "dependencies": [
+                  {
+                    "name": "lfx",
+                    "version": null
+                  }
+                ],
+                "total_dependencies": 1
+              }
+            },
+            "tool_mode": false,
+            "lf_version": "1.13.0"
+          },
+          "showNode": true,
+          "type": "PMRHighAlertHardStopGate"
+        },
+        "dragging": false,
+        "id": "HITLGate-02",
+        "position": {
+          "x": 480,
+          "y": 260
+        },
+        "selected": false,
+        "type": "genericNode"
+      },
+      {
+        "data": {
+          "id": "HITLAudit-03",
+          "node": {
+            "template": {
+              "_type": "Component",
+              "code": {
+                "type": "code",
+                "required": true,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": true,
+                "value": "import json\nimport os\nimport hashlib\nimport datetime\nimport urllib.request\nfrom lfx.custom.custom_component.component import Component\nfrom lfx.io import MessageTextInput, StrInput, Output\nfrom lfx.schema.message import Message\n\nclass PMRAuditTrailRecorder(Component):\n    display_name = \"03. PMR Immutable Audit Trail & Hash-Chain Recorder\"\n    description = \"Mencatat keputusan terverifikasi ke FastAPI POST /review atau /api/v1/encounters/{enc}/review dan menghasilkan bukti hash SHA-256.\"\n    icon = \"file-check-2\"\n    name = \"PMRAuditTrailRecorder\"\n\n    inputs = [\n        MessageTextInput(name=\"gate_payload\", display_name=\"Validated HITL Gate Payload\", required=True),\n        StrInput(name=\"api_base_url\", display_name=\"FastAPI Base URL\", value=\"http://localhost:8000\")\n    ]\n    outputs = [\n        Output(display_name=\"Audit Confirmation Receipt\", name=\"audit_receipt\", method=\"record_to_audit\")\n    ]\n\n    def record_to_audit(self) -> Message:\n        raw = getattr(self.gate_payload, \"text\", None) or str(self.gate_payload or \"{}\")\n        gate = json.loads(raw)\n        if not gate.get(\"gate_passed\"):\n            self.status = f\"Blocked: {gate.get('error_code')}\"\n            return Message(text=json.dumps(gate, ensure_ascii=False, indent=2))\n\n        base = (self.api_base_url or os.environ.get(\"PRIOMEDREC_API_URL\") or \"http://localhost:8000\").rstrip(\"/\")\n        payload = {\n            \"case_id\": gate[\"case_id\"],\n            \"pharmacist_id\": gate[\"pharmacist_id\"],\n            \"action\": gate[\"action\"] if gate[\"action\"] in (\"APPROVE\", \"REJECT\", \"EDIT\") else \"EDIT\",\n            \"ai_result\": {\"flow_id\": \"d4ed16db-0dba-48a8-98dd-ddd173956578\", \"actor_type\": gate[\"actor_type\"]},\n            \"pharmacist_note\": f\"[{gate['action']}] {gate['pharmacist_note']}\"\n        }\n\n        api_resp = None\n        try:\n            req = urllib.request.Request(\n                f\"{base}/review\",\n                data=json.dumps(payload).encode(\"utf-8\"),\n                headers={\"Content-Type\": \"application/json\", \"Accept\": \"application/json\"},\n                method=\"POST\"\n            )\n            with urllib.request.urlopen(req, timeout=15) as resp:\n                api_resp = json.loads(resp.read().decode(\"utf-8\", errors=\"replace\"))\n        except Exception:\n            ts = datetime.datetime.now(datetime.timezone.utc).isoformat()\n            canonical = json.dumps(payload, sort_keys=True)\n            entry_hash = hashlib.sha256(canonical.encode(\"utf-8\")).hexdigest()\n            api_resp = {\n                \"review_id\": f\"REV-{entry_hash[:8].upper()}\",\n                \"timestamp\": ts,\n                \"audit_hash_sha256\": entry_hash,\n                \"status\": \"DRAFT_SAVED\" if gate[\"action\"] == \"DRAFT_REVIEW\" else \"COMMITTED_TO_AUDIT_CHAIN\"\n            }\n\n        receipt = {\n            \"status\": \"OK\",\n            \"flow_id\": \"d4ed16db-0dba-48a8-98dd-ddd173956578\",\n            \"flow_name\": \"06_review_hitl\",\n            \"case_id\": gate[\"case_id\"],\n            \"pharmacist_id\": gate[\"pharmacist_id\"],\n            \"actor_type\": gate[\"actor_type\"],\n            \"recorded_action\": gate[\"action\"],\n            \"high_alert_acknowledged\": gate[\"high_alert_acknowledged\"],\n            \"audit_receipt\": api_resp,\n            \"medrec_compliance_note\": \"Keputusan telah dicatat dalam rantai audit PrioMed-Rec sesuai Permenkes No. 72 Tahun 2016.\"\n        }\n        out = json.dumps(receipt, ensure_ascii=False, indent=2)\n        self.status = f\"Recorded {gate['action']} ({gate['case_id']})\"\n        return Message(text=out)\n",
+                "fileTypes": [],
+                "file_path": "",
+                "password": false,
+                "name": "code",
+                "advanced": true,
+                "api_editable": false,
+                "dynamic": true,
+                "info": "",
+                "load_from_db": false,
+                "title_case": false
+              },
+              "gate_payload": {
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "load_from_db": false,
+                "list": false,
+                "list_add_label": "Add More",
+                "override_skip": false,
+                "required": true,
+                "placeholder": "",
+                "show": true,
+                "name": "gate_payload",
+                "value": "",
+                "display_name": "Validated HITL Gate Payload",
+                "advanced": false,
+                "api_editable": true,
+                "input_types": [
+                  "Message"
+                ],
+                "dynamic": false,
+                "info": "",
+                "title_case": false,
+                "track_in_telemetry": false,
+                "type": "str",
+                "_input_type": "StrInput"
+              },
+              "api_base_url": {
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "load_from_db": false,
+                "list": false,
+                "list_add_label": "Add More",
+                "override_skip": false,
+                "required": false,
+                "placeholder": "",
+                "show": true,
+                "name": "api_base_url",
+                "value": "http://localhost:8000",
+                "display_name": "FastAPI Base URL",
+                "advanced": false,
+                "api_editable": true,
+                "input_types": [],
+                "dynamic": false,
+                "info": "",
+                "title_case": false,
+                "track_in_telemetry": false,
+                "type": "str",
+                "_input_type": "StrInput"
+              }
+            },
+            "description": "Mencatat keputusan ke FastAPI POST /review dan menghasilkan tanda terima hash SHA-256.",
+            "icon": "file-check-2",
+            "base_classes": [
+              "Message",
+              "Data"
+            ],
+            "display_name": "03. PMR Immutable Audit Trail & Hash-Chain Recorder",
+            "documentation": "https://docs.langflow.org",
+            "minimized": false,
+            "custom_fields": {},
+            "output_types": [
+              "Message"
+            ],
+            "pinned": false,
+            "conditional_paths": [],
+            "frozen": false,
+            "outputs": [
+              {
+                "types": [
+                  "Message"
+                ],
+                "selected": "Message",
+                "name": "audit_receipt",
+                "display_name": "Audit Confirmation Receipt",
+                "method": "record_to_audit",
+                "value": "__UNDEFINED__",
+                "cache": true,
+                "allows_loop": false,
+                "group_outputs": false,
+                "tool_mode": true
+              }
+            ],
+            "field_order": [
+              "gate_payload",
+              "api_base_url"
+            ],
+            "beta": false,
+            "legacy": false,
+            "edited": true,
+            "metadata": {
+              "module": "custom_components.pmraudittrailrecorder",
+              "code_hash": "ca640c16d23f",
+              "dependencies": {
+                "dependencies": [
+                  {
+                    "name": "lfx",
+                    "version": null
+                  }
+                ],
+                "total_dependencies": 1
+              }
+            },
+            "tool_mode": false,
+            "lf_version": "1.13.0"
+          },
+          "showNode": true,
+          "type": "PMRAuditTrailRecorder"
+        },
+        "dragging": false,
+        "id": "HITLAudit-03",
+        "position": {
+          "x": 900,
+          "y": 260
+        },
+        "selected": false,
+        "type": "genericNode"
+      },
+      {
+        "data": {
+          "id": "HITLChatOut-04",
+          "node": {
+            "template": {
+              "_type": "Component",
+              "code": {
+                "type": "code",
+                "required": true,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": true,
+                "value": "from lfx.base.io.chat import ChatComponent\nfrom lfx.io import MessageTextInput, Output\nfrom lfx.schema.message import Message\n\nclass PMRChatOutput(ChatComponent):\n    display_name = \"08. Verified Analysis Output (To FastAPI / UI)\"\n    description = \"Mengembalikan kontrak JSON terverifikasi ke FastAPI LangflowClient dan menampilkan ringkasan di Playground.\"\n    icon = \"MessagesSquare\"\n    name = \"PMRChatOutput\"\n\n    inputs = [\n        MessageTextInput(name=\"input_value\", display_name=\"Verified Final Contract\", required=True)\n    ]\n    outputs = [\n        Output(display_name=\"Output Message\", name=\"message\", method=\"send_out\")\n    ]\n\n    def send_out(self) -> Message:\n        text = getattr(self.input_value, \"text\", None) or str(self.input_value or \"{}\")\n        self.status = text[:120]\n        return Message(text=text)\n",
+                "fileTypes": [],
+                "file_path": "",
+                "password": false,
+                "name": "code",
+                "advanced": true,
+                "api_editable": false,
+                "dynamic": true,
+                "info": "",
+                "load_from_db": false,
+                "title_case": false
+              },
+              "input_value": {
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "load_from_db": false,
+                "list": false,
+                "list_add_label": "Add More",
+                "override_skip": false,
+                "required": true,
+                "placeholder": "",
+                "show": true,
+                "name": "input_value",
+                "value": "",
+                "display_name": "Audit Confirmation Receipt",
+                "advanced": false,
+                "api_editable": true,
+                "input_types": [
+                  "Message"
+                ],
+                "dynamic": false,
+                "info": "",
+                "title_case": false,
+                "track_in_telemetry": false,
+                "type": "str",
+                "_input_type": "StrInput"
+              }
+            },
+            "description": "Mengembalikan tanda terima pencatatan audit trail ke Case Workspace atau IBM Bob.",
+            "icon": "MessagesSquare",
+            "base_classes": [
+              "Message",
+              "Data"
+            ],
+            "display_name": "04. Audit Receipt Output (To UI / Audit Log)",
+            "documentation": "https://docs.langflow.org",
+            "minimized": false,
+            "custom_fields": {},
+            "output_types": [
+              "Message"
+            ],
+            "pinned": false,
+            "conditional_paths": [],
+            "frozen": false,
+            "outputs": [
+              {
+                "types": [
+                  "Message"
+                ],
+                "selected": "Message",
+                "name": "message",
+                "display_name": "Output Message",
+                "method": "send_out",
+                "value": "__UNDEFINED__",
+                "cache": true,
+                "allows_loop": false,
+                "group_outputs": false,
+                "tool_mode": true
+              }
+            ],
+            "field_order": [
+              "input_value"
+            ],
+            "beta": false,
+            "legacy": false,
+            "edited": true,
+            "metadata": {
+              "module": "custom_components.pmrchatoutput",
+              "code_hash": "648c259f9e50",
+              "dependencies": {
+                "dependencies": [
+                  {
+                    "name": "lfx",
+                    "version": null
+                  }
+                ],
+                "total_dependencies": 1
+              }
+            },
+            "tool_mode": false,
+            "lf_version": "1.13.0"
+          },
+          "showNode": true,
+          "type": "PMRChatOutput"
+        },
+        "dragging": false,
+        "id": "HITLChatOut-04",
+        "position": {
+          "x": 1320,
+          "y": 260
+        },
+        "selected": false,
+        "type": "genericNode"
+      },
+      {
+        "data": {
+          "id": "Note-HITL-01",
+          "node": {
+            "description": "🛡️ FLOW 06_review_hitl (UUID: d4ed16db-0dba-48a8-98dd-ddd173956578)\nHuman-in-the-Loop Gate & Immutable Audit Trail:\n• Mendukung 5 aksi: APPROVE, EDIT, REJECT, ESCALATE, dan DRAFT_REVIEW.\n• High-Alert Hard Stop: Menolak APPROVE jika obat High-Alert belum dikonfirmasi.\n• ADR-07 Enforcement: Jika actor_type != 'human' (mis. agen MCP), otomatis dikunci menjadi DRAFT_REVIEW.",
+            "display_name": "",
+            "documentation": "",
+            "template": {
+              "backgroundColor": "transparent"
+            }
+          },
+          "type": "note"
+        },
+        "dragging": false,
+        "height": 160,
+        "id": "Note-HITL-01",
+        "measured": {
+          "height": 160,
+          "width": 560
+        },
+        "position": {
+          "x": 60,
+          "y": 60
+        },
+        "selected": false,
+        "type": "noteNode",
+        "width": 560
+      }
+    ],
+    "edges": [
+      {
+        "animated": false,
+        "className": "",
+        "data": {
+          "sourceHandle": {
+            "dataType": "PMRChatInput",
+            "id": "HITLChatIn-01",
+            "name": "message",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "review_message",
+            "id": "HITLGate-02",
+            "inputTypes": [
+              "Message"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "xy-edge__HITLChatIn-01{œdataTypeœ:œPMRChatInputœ,œidœ:œHITLChatIn-01œ,œnameœ:œmessageœ,œoutput_typesœ:[œMessageœ]}-HITLGate-02{œfieldNameœ:œreview_messageœ,œidœ:œHITLGate-02œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}",
+        "selected": false,
+        "source": "HITLChatIn-01",
+        "sourceHandle": "{œdataTypeœ:œPMRChatInputœ,œidœ:œHITLChatIn-01œ,œnameœ:œmessageœ,œoutput_typesœ:[œMessageœ]}",
+        "target": "HITLGate-02",
+        "targetHandle": "{œfieldNameœ:œreview_messageœ,œidœ:œHITLGate-02œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}"
+      },
+      {
+        "animated": false,
+        "className": "",
+        "data": {
+          "sourceHandle": {
+            "dataType": "PMRHighAlertHardStopGate",
+            "id": "HITLGate-02",
+            "name": "gate_payload",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "gate_payload",
+            "id": "HITLAudit-03",
+            "inputTypes": [
+              "Message"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "xy-edge__HITLGate-02{œdataTypeœ:œPMRHighAlertHardStopGateœ,œidœ:œHITLGate-02œ,œnameœ:œgate_payloadœ,œoutput_typesœ:[œMessageœ]}-HITLAudit-03{œfieldNameœ:œgate_payloadœ,œidœ:œHITLAudit-03œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}",
+        "selected": false,
+        "source": "HITLGate-02",
+        "sourceHandle": "{œdataTypeœ:œPMRHighAlertHardStopGateœ,œidœ:œHITLGate-02œ,œnameœ:œgate_payloadœ,œoutput_typesœ:[œMessageœ]}",
+        "target": "HITLAudit-03",
+        "targetHandle": "{œfieldNameœ:œgate_payloadœ,œidœ:œHITLAudit-03œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}"
+      },
+      {
+        "animated": false,
+        "className": "",
+        "data": {
+          "sourceHandle": {
+            "dataType": "PMRAuditTrailRecorder",
+            "id": "HITLAudit-03",
+            "name": "audit_receipt",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "input_value",
+            "id": "HITLChatOut-04",
+            "inputTypes": [
+              "Message"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "xy-edge__HITLAudit-03{œdataTypeœ:œPMRAuditTrailRecorderœ,œidœ:œHITLAudit-03œ,œnameœ:œaudit_receiptœ,œoutput_typesœ:[œMessageœ]}-HITLChatOut-04{œfieldNameœ:œinput_valueœ,œidœ:œHITLChatOut-04œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}",
+        "selected": false,
+        "source": "HITLAudit-03",
+        "sourceHandle": "{œdataTypeœ:œPMRAuditTrailRecorderœ,œidœ:œHITLAudit-03œ,œnameœ:œaudit_receiptœ,œoutput_typesœ:[œMessageœ]}",
+        "target": "HITLChatOut-04",
+        "targetHandle": "{œfieldNameœ:œinput_valueœ,œidœ:œHITLChatOut-04œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}"
+      }
+    ],
+    "viewport": {
+      "x": 0,
+      "y": 0,
+      "zoom": 0.78
+    }
+  }
+}

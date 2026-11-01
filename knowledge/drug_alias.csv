@@ -1,0 +1,257 @@
+brand_name,generic_name,atc_code,drug_class,is_high_alert,confidence,source,status
+# STATUS: DRAFT_PERLU_VALIDASI_APOTEKER | OWNER: TBD-apoteker
+# Daftar ini berisi ≥200 alias obat umum Indonesia (merek dagang → generik)
+# Dihasilkan otomatis sebagai kerangka — WAJIB divalidasi oleh apoteker sebelum digunakan klinis
+# Format: brand_name (lowercase),generic_name,atc_code,drug_class,is_high_alert (true/false),confidence,source,status
+# --- Antihipertensi: ACE Inhibitor ---
+captopril,captopril,C09AA01,ace_inhibitor,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+capoten,captopril,C09AA01,ace_inhibitor,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+tensikap,captopril,C09AA01,ace_inhibitor,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+enalapril,enalapril,C09AA02,ace_inhibitor,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+tenase,enalapril,C09AA02,ace_inhibitor,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+lisinopril,lisinopril,C09AA03,ace_inhibitor,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+zestril,lisinopril,C09AA03,ace_inhibitor,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+prinivil,lisinopril,C09AA03,ace_inhibitor,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+ramipril,ramipril,C09AA05,ace_inhibitor,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+tritace,ramipril,C09AA05,ace_inhibitor,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+delix,ramipril,C09AA05,ace_inhibitor,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+perindopril,perindopril,C09AA04,ace_inhibitor,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+coversyl,perindopril,C09AA04,ace_inhibitor,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+# --- Antihipertensi: ARB ---
+losartan,losartan,C09CA01,arb,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+cozaar,losartan,C09CA01,arb,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+lortaan,losartan,C09CA01,arb,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+valsartan,valsartan,C09CA03,arb,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+diovan,valsartan,C09CA03,arb,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+candesartan,candesartan,C09CA06,arb,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+atacand,candesartan,C09CA06,arb,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+telmisartan,telmisartan,C09CA07,arb,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+micardis,telmisartan,C09CA07,arb,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+irbesartan,irbesartan,C09CA04,arb,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+aprovel,irbesartan,C09CA04,arb,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+# --- Antihipertensi: CCB ---
+amlodipine,amlodipine,C08CA01,calcium_channel_blocker,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+norvasc,amlodipine,C08CA01,calcium_channel_blocker,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+amlodipin,amlodipine,C08CA01,calcium_channel_blocker,false,0.98,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+nifedipine,nifedipine,C08CA05,calcium_channel_blocker,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+adalat,nifedipine,C08CA05,calcium_channel_blocker,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+nifedipin,nifedipine,C08CA05,calcium_channel_blocker,false,0.98,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+diltiazem,diltiazem,C08DB01,calcium_channel_blocker,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+herbesser,diltiazem,C08DB01,calcium_channel_blocker,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+verapamil,verapamil,C08DA01,calcium_channel_blocker,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+isoptin,verapamil,C08DA01,calcium_channel_blocker,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+# --- Beta Blocker ---
+bisoprolol,bisoprolol,C07AB07,beta_blocker,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+concor,bisoprolol,C07AB07,beta_blocker,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+bisocor,bisoprolol,C07AB07,beta_blocker,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+metoprolol,metoprolol,C07AB02,beta_blocker,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+lopressor,metoprolol,C07AB02,beta_blocker,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+lopresor,metoprolol,C07AB02,beta_blocker,false,0.93,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+carvedilol,carvedilol,C07AG02,beta_blocker,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+coreg,carvedilol,C07AG02,beta_blocker,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+atenolol,atenolol,C07AB03,beta_blocker,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+tenormin,atenolol,C07AB03,beta_blocker,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+propranolol,propranolol,C07AA05,beta_blocker,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+inderal,propranolol,C07AA05,beta_blocker,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+# --- Antikoagulan (HIGH ALERT) ---
+warfarin,warfarin,B01AA03,anticoagulant,true,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+coumadin,warfarin,B01AA03,anticoagulant,true,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+simarc,warfarin,B01AA03,anticoagulant,true,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+heparin,heparin,B01AB01,anticoagulant,true,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+enoxaparin,enoxaparin,B01AB05,anticoagulant,true,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+lovenox,enoxaparin,B01AB05,anticoagulant,true,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+clexane,enoxaparin,B01AB05,anticoagulant,true,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+rivaroxaban,rivaroxaban,B01AF01,anticoagulant,true,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+xarelto,rivaroxaban,B01AF01,anticoagulant,true,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+apixaban,apixaban,B01AF02,anticoagulant,true,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+eliquis,apixaban,B01AF02,anticoagulant,true,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+fondaparinux,fondaparinux,B01AX05,anticoagulant,true,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+arixtra,fondaparinux,B01AX05,anticoagulant,true,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+# --- Insulin (HIGH ALERT) ---
+insulin,insulin,A10A,insulin,true,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+novorapid,insulin aspart,A10AB05,insulin,true,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+novomix,insulin aspart biphasic,A10AD05,insulin,true,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+humalog,insulin lispro,A10AB04,insulin,true,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+lantus,insulin glargine,A10AE04,insulin,true,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+levemir,insulin detemir,A10AE05,insulin,true,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+actrapid,insulin soluble,A10AB01,insulin,true,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+mixtard,insulin biphasic isophane,A10AD01,insulin,true,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+humulin,insulin human,A10AC01,insulin,true,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+# --- Antidiabetik Oral ---
+metformin,metformin,A10BA02,biguanide,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+glucophage,metformin,A10BA02,biguanide,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+gliformin,metformin,A10BA02,biguanide,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+diabex,metformin,A10BA02,biguanide,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+glibenclamide,glibenclamide,A10BB01,sulfonylurea,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+daonil,glibenclamide,A10BB01,sulfonylurea,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+glipizide,glipizide,A10BB07,sulfonylurea,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+glucotrol,glipizide,A10BB07,sulfonylurea,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+gliclazide,gliclazide,A10BB09,sulfonylurea,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+diamicron,gliclazide,A10BB09,sulfonylurea,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+glimepiride,glimepiride,A10BB12,sulfonylurea,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+amaryl,glimepiride,A10BB12,sulfonylurea,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+sitagliptin,sitagliptin,A10BH01,dpp4_inhibitor,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+januvia,sitagliptin,A10BH01,dpp4_inhibitor,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+vildagliptin,vildagliptin,A10BH02,dpp4_inhibitor,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+galvus,vildagliptin,A10BH02,dpp4_inhibitor,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+empagliflozin,empagliflozin,A10BK03,sglt2_inhibitor,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+jardiance,empagliflozin,A10BK03,sglt2_inhibitor,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+dapagliflozin,dapagliflozin,A10BK01,sglt2_inhibitor,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+forxiga,dapagliflozin,A10BK01,sglt2_inhibitor,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+pioglitazone,pioglitazone,A10BG03,thiazolidinedione,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+actos,pioglitazone,A10BG03,thiazolidinedione,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+# --- Statin ---
+atorvastatin,atorvastatin,C10AA05,statin,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+lipitor,atorvastatin,C10AA05,statin,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+simvastatin,simvastatin,C10AA01,statin,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+zocor,simvastatin,C10AA01,statin,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+rosuvastatin,rosuvastatin,C10AA07,statin,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+crestor,rosuvastatin,C10AA07,statin,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+lovastatin,lovastatin,C10AA02,statin,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+mevacor,lovastatin,C10AA02,statin,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+pravastatin,pravastatin,C10AA03,statin,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+# --- Antinyeri / NSAID ---
+ibuprofen,ibuprofen,M01AE01,nsaid,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+profen,ibuprofen,M01AE01,nsaid,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+bufect,ibuprofen,M01AE01,nsaid,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+farmaprofen,ibuprofen,M01AE01,nsaid,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+naproxen,naproxen,M01AE02,nsaid,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+naprosyn,naproxen,M01AE02,nsaid,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+meloxicam,meloxicam,M01AC06,nsaid,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+mobic,meloxicam,M01AC06,nsaid,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+mefenamic acid,mefenamic acid,M01AG01,nsaid,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+asam mefenamat,mefenamic acid,M01AG01,nsaid,false,0.98,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+ponstan,mefenamic acid,M01AG01,nsaid,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+diclofenac,diclofenac,M01AB05,nsaid,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+voltaren,diclofenac,M01AB05,nsaid,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+diklofenak,diclofenac,M01AB05,nsaid,false,0.98,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+ketorolac,ketorolac,M01AB15,nsaid,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+toradol,ketorolac,M01AB15,nsaid,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+celecoxib,celecoxib,M01AH01,cox2_inhibitor,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+celebrex,celecoxib,M01AH01,cox2_inhibitor,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+# --- Analgesik ---
+paracetamol,paracetamol,N02BE01,analgesic,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+acetaminophen,paracetamol,N02BE01,analgesic,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+panadol,paracetamol,N02BE01,analgesic,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+tempra,paracetamol,N02BE01,analgesic,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+sanmol,paracetamol,N02BE01,analgesic,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+naprex,paracetamol,N02BE01,analgesic,false,0.85,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+# --- Opioid (HIGH ALERT) ---
+morphine,morphine,N02AA01,opioid,true,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+morfin,morphine,N02AA01,opioid,true,0.98,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+fentanyl,fentanyl,N01AH01,opioid,true,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+durogesic,fentanyl,N01AH01,opioid,true,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+codeine,codeine,R05DA04,opioid,true,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+tramadol,tramadol,N02AX02,opioid_weak,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+tramal,tramadol,N02AX02,opioid_weak,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+# --- Antibiotik ---
+amoxicillin,amoxicillin,J01CA04,penicillin,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+amoksisilin,amoxicillin,J01CA04,penicillin,false,0.98,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+amoxsan,amoxicillin,J01CA04,penicillin,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+cephalexin,cephalexin,J01DB01,cephalosporin,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+sefaleksin,cephalexin,J01DB01,cephalosporin,false,0.98,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+cefadroxil,cefadroxil,J01DB05,cephalosporin,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+droxyl,cefadroxil,J01DB05,cephalosporin,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+cefixime,cefixime,J01DD08,cephalosporin,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+cefspan,cefixime,J01DD08,cephalosporin,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+ciprofloxacin,ciprofloxacin,J01MA02,fluoroquinolone,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+ciprofloksasin,ciprofloxacin,J01MA02,fluoroquinolone,false,0.98,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+levofloxacin,levofloxacin,J01MA12,fluoroquinolone,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+levofloksasin,levofloxacin,J01MA12,fluoroquinolone,false,0.98,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+azithromycin,azithromycin,J01FA10,macrolide,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+zithromax,azithromycin,J01FA10,macrolide,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+clarithromycin,clarithromycin,J01FA09,macrolide,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+klaritromisin,clarithromycin,J01FA09,macrolide,false,0.98,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+erythromycin,erythromycin,J01FA01,macrolide,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+eritromisin,erythromycin,J01FA01,macrolide,false,0.98,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+doxycycline,doxycycline,J01AA02,tetracycline,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+doksisiklin,doxycycline,J01AA02,tetracycline,false,0.98,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+metronidazole,metronidazole,J01XD01,nitroimidazole,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+flagyl,metronidazole,J01XD01,nitroimidazole,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+# --- Kardiovaskular lainnya ---
+digoxin,digoxin,C01AA05,cardiac_glycoside,true,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+lanoxin,digoxin,C01AA05,cardiac_glycoside,true,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+furosemide,furosemide,C03CA01,loop_diuretic,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+lasix,furosemide,C03CA01,loop_diuretic,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+spironolactone,spironolactone,C03DA01,potassium_sparing_diuretic,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+aldactone,spironolactone,C03DA01,potassium_sparing_diuretic,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+hydrochlorothiazide,hydrochlorothiazide,C03AA03,thiazide_diuretic,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+hct,hydrochlorothiazide,C03AA03,thiazide_diuretic,false,0.85,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+isosorbide dinitrate,isosorbide dinitrate,C01DA08,nitrate,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+isosorbit dinitrat,isosorbide dinitrate,C01DA08,nitrate,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+isdn,isosorbide dinitrate,C01DA08,nitrate,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+isosorbide mononitrate,isosorbide mononitrate,C01DA14,nitrate,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+# --- Asam Lambung ---
+omeprazole,omeprazole,A02BC01,ppi,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+prilosec,omeprazole,A02BC01,ppi,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+losec,omeprazole,A02BC01,ppi,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+lansoprazole,lansoprazole,A02BC03,ppi,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+prevacid,lansoprazole,A02BC03,ppi,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+pantoprazole,pantoprazole,A02BC02,ppi,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+controloc,pantoprazole,A02BC02,ppi,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+esomeprazole,esomeprazole,A02BC05,ppi,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+nexium,esomeprazole,A02BC05,ppi,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+ranitidine,ranitidine,A02BA02,h2_blocker,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+zantac,ranitidine,A02BA02,h2_blocker,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+sucralfate,sucralfate,A02BX02,antacid,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+# --- Kortikosteroid ---
+prednisone,prednisone,H02AB07,corticosteroid,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+prednisolone,prednisolone,H02AB06,corticosteroid,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+dexamethasone,dexamethasone,H02AB02,corticosteroid,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+deksametason,dexamethasone,H02AB02,corticosteroid,false,0.98,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+methylprednisolone,methylprednisolone,H02AB04,corticosteroid,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+metilprednisolon,methylprednisolone,H02AB04,corticosteroid,false,0.98,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+medrol,methylprednisolone,H02AB04,corticosteroid,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+# --- Psikiatri ---
+haloperidol,haloperidol,N05AD01,antipsychotic,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+haldol,haloperidol,N05AD01,antipsychotic,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+risperidone,risperidone,N05AX08,antipsychotic,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+risperdal,risperidone,N05AX08,antipsychotic,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+quetiapine,quetiapine,N05AH04,antipsychotic,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+seroquel,quetiapine,N05AH04,antipsychotic,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+diazepam,diazepam,N05BA01,benzodiazepine,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+valium,diazepam,N05BA01,benzodiazepine,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+alprazolam,alprazolam,N05BA12,benzodiazepine,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+xanax,alprazolam,N05BA12,benzodiazepine,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+amitriptyline,amitriptyline,N06AA09,tricyclic_antidepressant,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+sertraline,sertraline,N06AB06,ssri,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+zoloft,sertraline,N06AB06,ssri,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+fluoxetine,fluoxetine,N06AB03,ssri,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+prozac,fluoxetine,N06AB03,ssri,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+# --- Paru-paru / Respirasi ---
+salbutamol,salbutamol,R03AC02,beta2_agonist,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+albuterol,salbutamol,R03AC02,beta2_agonist,false,0.98,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+ventolin,salbutamol,R03AC02,beta2_agonist,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+salbron,salbutamol,R03AC02,beta2_agonist,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+formoterol,formoterol,R03AC13,laba,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+budesonide,budesonide,R03BA02,inhaled_corticosteroid,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+pulmicort,budesonide,R03BA02,inhaled_corticosteroid,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+fluticasone,fluticasone,R03BA05,inhaled_corticosteroid,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+flixotide,fluticasone,R03BA05,inhaled_corticosteroid,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+ipratropium,ipratropium,R03BB01,anticholinergic_respiratory,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+atrovent,ipratropium,R03BB01,anticholinergic_respiratory,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+theophylline,theophylline,R03DA04,xanthine,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+aminophylline,aminophylline,R03DA05,xanthine,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+# --- Antiplatelet ---
+aspirin,aspirin,B01AC06,antiplatelet,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+aspilets,aspirin,B01AC06,antiplatelet,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+clopidogrel,clopidogrel,B01AC04,antiplatelet,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+plavix,clopidogrel,B01AC04,antiplatelet,false,0.95,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+ticagrelor,ticagrelor,B01AC24,antiplatelet,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+brilinta,ticagrelor,B01AC24,antiplatelet,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+# --- Tiroid ---
+levothyroxine,levothyroxine,H03AA01,thyroid_hormone,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+euthyrox,levothyroxine,H03AA01,thyroid_hormone,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+thyrax,levothyroxine,H03AA01,thyroid_hormone,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+propylthiouracil,propylthiouracil,H03BA02,antithyroid,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+ptu,propylthiouracil,H03BA02,antithyroid,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+# --- Suplemen & Vitamin ---
+vitamin b1,thiamine,A11DA01,vitamin,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+thiamine,thiamine,A11DA01,vitamin,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+vitamin b12,cyanocobalamin,B03BA01,vitamin,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+cyanocobalamin,cyanocobalamin,B03BA01,vitamin,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+folic acid,folic acid,B03BB01,vitamin,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+asam folat,folic acid,B03BB01,vitamin,false,0.98,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+vitamin d,cholecalciferol,A11CC05,vitamin,false,0.9,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+calcium carbonate,calcium carbonate,A12AA04,mineral,false,1.0,manual,DRAFT_PERLU_VALIDASI_APOTEKER
+kalsium karbonat,calcium carbonate,A12AA04,mineral,false,0.98,manual,DRAFT_PERLU_VALIDASI_APOTEKER

@@ -2,9 +2,11 @@
 
 > **AI-assisted Admission Medication Reconciliation Prioritization for Clinical Pharmacists**
 
+> **Website-first:** antarmuka yang didukung adalah React/Vite di `web/`, dengan FastAPI sebagai backend. Streamlit bukan bagian runtime proyek ini. Panduan terbaru: [`docs/WEBSITE_RUNBOOK.md`](docs/WEBSITE_RUNBOOK.md).
+
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)]()
 [![FastAPI](https://img.shields.io/badge/FastAPI-1.1.0-009688)]()
-[![Tests](https://img.shields.io/badge/tests-241%20passed-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-518%20passed-brightgreen)]()
 [![Model](https://img.shields.io/badge/model-0.3.0--labels--3.0.0-orange)]()
 [![LLM](https://img.shields.io/badge/LLM-Gemini%20%7C%20Groq%20%7C%20AutoFallback-purple)]()
 
@@ -47,7 +49,7 @@ PrioMed-Rec secara otomatis:
 ## 🏗️ Arsitektur & Alur Kerja
 
 ```
- Streamlit App (UI Tab 1 & Tab 2)
+ React/Vite Website (UI Worklist, BPMH, Analisis, Audit)
         │
         ├──> POST /prioritize/batch ──> XGBoost (Batch Ranking N Pasien)
         │
@@ -96,7 +98,7 @@ copy .env.example .env
 Isi file `.env` dengan API Key Anda (Dapatkan API Key gratis di [Google AI Studio](https://aistudio.google.com/app/apikey) dan/atau [Groq Console](https://console.groq.com)):
 ```env
 LLM_PROVIDER=gemini
-LLM_API_KEY=AIzaSyCdy0WtCNZdZMfJOWL8ZUorxmM5vBQvfCA
+LLM_API_KEY=your_provider_key_here
 LLM_MODEL_NAME=gemini-2.5-flash
 LLM_FALLBACK_MODEL=gemini-1.5-flash-8b
 LLM_GROQ_API_KEY=gsk_xxxxxxxxxxxxxxxxxxxxxxxx
@@ -112,12 +114,16 @@ LLM_GROQ_MODEL=llama-3.3-70b-versatile
 - Dokumentasi API Swagger: `http://localhost:8000/docs`
 - Healthcheck Endpoint: `http://localhost:8000/health`
 
-#### B. Jalankan Frontend Streamlit (Port 8501)
+#### B. Jalankan Frontend Website React (Port 5173)
 Buka terminal baru (pastikan virtualenv aktif) dan jalankan:
 ```bash
-.\.venv\Scripts\python.exe -m streamlit run streamlit_app/app.py
+cd web
+npm ci
+# PowerShell
+$env:VITE_DATA_MODE="live"
+npm run dev
 ```
-Akses dashboard di browser: `http://localhost:8501`
+Akses dashboard di browser: `http://localhost:5173`
 
 ---
 
@@ -148,9 +154,9 @@ PrioMed-Rec/
 │   ├── llm/                    # Service LLM, Prompt Templates SBAR, & Guardrail Validators
 │   ├── models/                 # Inference Guard & Prediction Engine
 │   └── rules/                  # Discrepancy Rule Evaluator
-├── streamlit_app/              # Frontend Streamlit App (Multi-Tab UI)
-│   ├── app.py                  # Entry Point Streamlit
-│   └── components/             # Ranked Worklist & Result View Components
+├── web/                        # Frontend React/Vite untuk website
+│   ├── src/pages/              # Worklist, BPMH, Analisis, Audit, Settings
+│   └── src/api/                # Kontrak HTTP menuju FastAPI
 ├── tests/                      # Unit & Integration Tests (pytest)
 ├── .env.example                # Template File Environment
 ├── .gitignore                  # Konfigurasi Ignored Files untuk Git

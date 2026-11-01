@@ -1,0 +1,72 @@
+/* command_center.css - Premium design for CommandCenterPage */
+
+:root {
+  --primary-hue: 200; /* teal */
+  --primary-saturation: 55%;
+  --primary-lightness: 48%;
+  --bg-gradient: linear-gradient(135deg, hsl(var(--primary-hue), var(--primary-saturation), 30%), hsl(var(--primary-hue), var(--primary-saturation), 45%));
+  --card-bg: rgba(255, 255, 255, 0.12);
+  --card-blur: 12px;
+  --text-color: hsl(0, 0%, 95%);
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-gradient);
+  color: var(--text-color);
+  min-height: 100vh;
+}
+
+.command-center-page {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.card {
+  backdrop-filter: blur(var(--card-blur));
+  background: var(--card-bg);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3);
+}
+
+h2 {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  font-size: 1.25rem;
+  color: hsl(var(--primary-hue), 80%, 80%);
+}
+
+p, li, td, th {
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background: rgba(255,255,255,0.08);
+}
+
+th, td {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+tr.clickable { cursor: pointer; }
+tr.clickable:hover { background: rgba(255,255,255,0.06); }
+
+.error { color: #ff6b6b; }

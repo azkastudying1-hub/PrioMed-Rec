@@ -1,0 +1,115 @@
+drug_name,high_alert,nti,beers_pim,category,route,source
+alprazolam,0,0,1,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+alteplase,1,0,0,thrombolytics,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+amiodarone,1,1,0,antiarrhythmics,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+amitriptyline,0,0,1,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+apixaban,1,1,0,anticoagulants,oral,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+argatroban,1,1,0,anticoagulants,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+benztropine,0,0,1,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+bivalirudin,1,0,0,anticoagulants,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+carbamazepine,0,1,0,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+carisoprodol,0,0,1,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+chlorpheniramine,0,0,1,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+cisatracurium,1,0,0,neuromuscular_blockers,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+cisplatin,1,0,0,chemotherapy,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+clonazepam,0,0,1,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+clozapine,0,1,0,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+codeine,1,0,0,opioids,PO,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+cyclobenzaprine,0,0,1,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+cyclophosphamide,1,0,0,chemotherapy,IV/oral,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+cyclosporine,0,1,0,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+dabigatran,1,1,0,anticoagulants,oral,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+dexmedetomidine,1,0,0,sedation_agents,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+diazepam,0,0,1,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+diclofenac,0,0,1,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+digoxin,1,1,1,inotropic_agents,IV/PO,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+diphenhydramine,0,0,1,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+dobutamine,1,0,0,inotropic_agents,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+dopamine,1,0,0,adrenergic_agonists,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+doxorubicin,1,0,0,chemotherapy,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+edoxaban,0,1,0,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+enoxaparin,1,0,0,anticoagulants,SC,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+epinephrine,1,0,0,adrenergic_agonists,IV/IM/SC,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+eptifibatide,1,0,0,antiplatelet,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+eszopiclone,0,0,1,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+everolimus,0,1,0,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+fentanyl,1,0,0,opioids,IV/patch,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+flecainide,0,1,0,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+fluorouracil,1,0,0,chemotherapy,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+fondaparinux,1,0,0,anticoagulants,SC,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+gemcitabine,1,0,0,chemotherapy,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+glimepiride,1,0,0,sulfonylureas,oral,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+glipizide,1,0,1,sulfonylureas,oral,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+glyburide,1,0,1,sulfonylureas,oral,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+heparin,1,0,0,anticoagulants,IV/SC,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+hydromorphone,1,0,0,opioids,IV/PO,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+hydroxyzine,0,0,1,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+ibuprofen,0,0,1,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+indomethacin,0,0,1,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+insulin,1,0,0,glycemic_control,SC/IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+insulin aspart,1,0,0,glycemic_control,SC,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+insulin glargine,1,0,0,glycemic_control,SC,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+insulin regular,1,0,0,glycemic_control,IV/SC,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+iodinated contrast,1,0,0,radiocontrast,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+ketamine,1,0,0,anesthetic_agents,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+ketorolac,0,0,1,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+labetalol,1,0,0,adrenergic_antagonists,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+lamotrigine,0,1,0,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+levetiracetam,0,1,0,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+levothyroxine,0,1,0,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+lidocaine,1,0,0,antiarrhythmics,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+lithium,0,1,0,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+lorazepam,1,0,1,sedation_agents,IV/PO,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+magnesium sulfate,1,0,0,electrolytes,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+methadone,1,0,0,opioids,PO,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+methocarbamol,0,0,1,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+methotrexate,1,1,0,chemotherapy,oral/IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+metoprolol,1,0,0,adrenergic_antagonists,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+midazolam,1,0,0,sedation_agents,IV/PO,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+milrinone,1,0,0,inotropic_agents,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+morphine,1,0,0,opioids,IV/PO/patch,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+mycophenolate,0,1,0,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+naproxen,0,0,1,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+nitrofurantoin,0,0,1,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+nitroprusside,1,0,0,vasodilators,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+norepinephrine,1,0,0,adrenergic_agonists,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+oxybutynin,0,0,1,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+oxycodone,1,0,0,opioids,PO,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+oxytocin,1,0,0,uterotonics,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+paclitaxel,1,0,0,chemotherapy,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+parenteral nutrition,1,0,0,parenteral_nutrition,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+paroxetine,0,0,1,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+phenobarbital,0,1,0,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+phenylephrine,1,0,0,adrenergic_agonists,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+phenytoin,0,1,0,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+pioglitazone,0,0,1,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+potassium chloride,1,0,0,electrolytes,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+potassium phosphate,1,0,0,electrolytes,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+primidone,0,1,0,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+procainamide,1,0,0,antiarrhythmics,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+propafenone,0,1,0,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+propofol,1,0,0,anesthetic_agents,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+propranolol,1,0,0,adrenergic_antagonists,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+quinidine,0,1,0,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+reteplase,1,0,0,thrombolytics,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+rivaroxaban,1,1,0,anticoagulants,oral,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+rocuronium,1,0,0,neuromuscular_blockers,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+sevoflurane,1,0,0,anesthetic_agents,inhaled,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+sirolimus,0,1,0,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+sliding scale insulin,0,0,1,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+sodium chloride hypertonic,1,0,0,electrolytes,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+sotalol,0,1,0,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+streptokinase,1,0,0,thrombolytics,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+succinylcholine,1,0,0,neuromuscular_blockers,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+tacrolimus,0,1,0,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+tenecteplase,1,0,0,thrombolytics,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+theophylline,0,1,0,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+tirofiban,1,0,0,antiplatelet,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+tolbutamide,1,0,0,sulfonylureas,oral,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+tranexamic acid,1,0,0,antifibrinolytics,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+valproate,0,1,0,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+vasopressin,1,0,0,vasopressors,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+vecuronium,1,0,0,neuromuscular_blockers,IV,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+warfarin,1,1,0,anticoagulants,oral,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+zaleplon,0,0,1,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023
+zolpidem,0,0,1,,,ISMP_2024+FDA_NTI+AGS_BEERS_2023

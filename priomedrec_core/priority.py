@@ -3,6 +3,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from .thresholds import high_threshold, medium_threshold
+
 TIER_ORDER = {"HIGH": 3, "MEDIUM": 2, "LOW": 1}
 TIER_FROM_INT = {value: key for key, value in TIER_ORDER.items()}
 
@@ -11,10 +13,16 @@ def tier_int(tier: str | None) -> int:
     return TIER_ORDER.get((tier or "LOW").upper(), 1)
 
 
-def tier_from_score(score: float, high_threshold: float = 0.65, medium_threshold: float = 0.35) -> str:
-    if score >= high_threshold:
+def tier_from_score(
+    score: float,
+    high_threshold_value: float | None = None,
+    medium_threshold_value: float | None = None,
+) -> str:
+    high = high_threshold() if high_threshold_value is None else high_threshold_value
+    medium = medium_threshold() if medium_threshold_value is None else medium_threshold_value
+    if score >= high:
         return "HIGH"
-    if score >= medium_threshold:
+    if score >= medium:
         return "MEDIUM"
     return "LOW"
 

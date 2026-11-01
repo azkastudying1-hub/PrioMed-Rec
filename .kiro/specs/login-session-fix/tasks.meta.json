@@ -1,0 +1,85 @@
+{
+  "pbtResults": {
+    "1. Write bug condition exploration test": {
+      "status": "passed",
+      "failingExample": "Counterexample for P1 and P2: username=\" \" (space), password=\" \" (space)\n- Expected error message: \"Username atau password salah\" (from backend)\n- Actual error message received: \"Sesi habis. Silakan login kembali.\" (session expiration message)\n\nAdditional counterexamples from concrete tests:\n- Invalid Password: Expected \"Username atau password salah\", got \"Sesi habis. Silakan login kembali.\"\n- Invalid Username: Expected \"Username atau password salah\", got \"Sesi habis. Silakan login kembali.\"\n\nThis confirms the bug exists: when /auth/login returns 401 with invalid credentials, the apiFetch function throws a generic \"Sesi habis. Silakan login kembali.\" error instead of propagating the specific backend error message \"Username atau password salah\".",
+      "lastRunTimestamp": 1793463240024
+    }
+  },
+  "executionHistory": {
+    "1. Write bug condition exploration test": [
+      {
+        "executionId": "4303e6b1-3cd5-4e68-8663-f88c06ee77ab",
+        "chatSessionId": "sess_2eab903b-9319-4df5-bbc8-05bc845b10ca",
+        "timestamp": 1793462202473
+      },
+      {
+        "executionId": "4303e6b1-3cd5-4e68-8663-f88c06ee77ab",
+        "chatSessionId": "sess_2eab903b-9319-4df5-bbc8-05bc845b10ca",
+        "timestamp": 1793463258580
+      }
+    ],
+    "2. Write preservation property tests (BEFORE implementing fix)": [
+      {
+        "executionId": "06d58b2d-1864-4cea-8e07-0191d9b42b5c",
+        "chatSessionId": "sess_2eab903b-9319-4df5-bbc8-05bc845b10ca",
+        "timestamp": 1793463282965
+      }
+    ],
+    "3.1 Implement the fix": [
+      {
+        "executionId": "06d58b2d-1864-4cea-8e07-0191d9b42b5c",
+        "chatSessionId": "sess_2eab903b-9319-4df5-bbc8-05bc845b10ca",
+        "timestamp": 1793465121420
+      },
+      {
+        "executionId": "06d58b2d-1864-4cea-8e07-0191d9b42b5c",
+        "chatSessionId": "sess_2eab903b-9319-4df5-bbc8-05bc845b10ca",
+        "timestamp": 1793465665716
+      }
+    ],
+    "3.2 Verify bug condition exploration test now passes": [
+      {
+        "executionId": "06d58b2d-1864-4cea-8e07-0191d9b42b5c",
+        "chatSessionId": "sess_2eab903b-9319-4df5-bbc8-05bc845b10ca",
+        "timestamp": 1793465676291
+      },
+      {
+        "executionId": "06d58b2d-1864-4cea-8e07-0191d9b42b5c",
+        "chatSessionId": "sess_2eab903b-9319-4df5-bbc8-05bc845b10ca",
+        "timestamp": 1793466024869
+      }
+    ],
+    "3.3 Verify preservation tests still pass": [
+      {
+        "executionId": "06d58b2d-1864-4cea-8e07-0191d9b42b5c",
+        "chatSessionId": "sess_2eab903b-9319-4df5-bbc8-05bc845b10ca",
+        "timestamp": 1793466028807
+      },
+      {
+        "executionId": "06d58b2d-1864-4cea-8e07-0191d9b42b5c",
+        "chatSessionId": "sess_2eab903b-9319-4df5-bbc8-05bc845b10ca",
+        "timestamp": 1793467017608
+      }
+    ],
+    "3. Fix for login session expiration error message bug": [
+      {
+        "executionId": "06d58b2d-1864-4cea-8e07-0191d9b42b5c",
+        "chatSessionId": "sess_2eab903b-9319-4df5-bbc8-05bc845b10ca",
+        "timestamp": 1793467018418
+      }
+    ],
+    "4. Checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "06d58b2d-1864-4cea-8e07-0191d9b42b5c",
+        "chatSessionId": "sess_2eab903b-9319-4df5-bbc8-05bc845b10ca",
+        "timestamp": 1793467021792
+      },
+      {
+        "executionId": "06d58b2d-1864-4cea-8e07-0191d9b42b5c",
+        "chatSessionId": "sess_2eab903b-9319-4df5-bbc8-05bc845b10ca",
+        "timestamp": 1793467631855
+      }
+    ]
+  }
+}

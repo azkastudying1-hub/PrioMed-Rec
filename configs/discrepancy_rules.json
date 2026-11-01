@@ -1,15 +1,107 @@
 {
-  "rule_version": "rules-0.1.0",
+  "rule_version": "rules-0.2.0",
+  "status": "DRAFT_PERLU_VALIDASI_APOTEKER",
+  "owner": "TBD-apoteker",
+  "description": "Aturan diskrepansi obat dengan severity tier. DRAFT — wajib divalidasi apoteker klinis.",
+  "severity_tier_definition": {
+    "tier_1": {
+      "label": "Kritis",
+      "color": "red",
+      "description": "Diskrepansi yang berpotensi menyebabkan bahaya klinis signifikan jika tidak ditangani segera",
+      "examples": "Omisi antikoagulan/insulin/antiepilepsi; duplikasi antikoagulan; konflik alergi; interaksi mayor",
+      "priority_floor": "HIGH",
+      "requires_hard_stop": true
+    },
+    "tier_2": {
+      "label": "Signifikan",
+      "color": "yellow",
+      "description": "Diskrepansi klinis yang perlu ditangani tetapi tidak memerlukan intervensi segera",
+      "examples": "Omisi antibiotik/antihipertensi non-kritis; interaksi moderat; Beers PIM",
+      "priority_floor": null,
+      "requires_hard_stop": false
+    },
+    "tier_3": {
+      "label": "Minor",
+      "color": "gray",
+      "description": "Diskrepansi yang memerlukan dokumentasi tetapi jarang memerlukan intervensi",
+      "examples": "Omisi vitamin/suplemen; substitusi formularium; perbedaan sediaan non-kritis",
+      "priority_floor": null,
+      "requires_hard_stop": false
+    }
+  },
   "rules": {
     "omission": {
       "enabled": true,
       "require_active_status": true,
-      "description": "Flags medications in pre-admission list absent from admission list"
+      "description": "Flags medications in pre-admission list absent from admission list",
+      "severity_by_class": {
+        "status": "DRAFT_PERLU_VALIDASI_APOTEKER",
+        "owner": "TBD-apoteker",
+        "tier_1_classes": [
+          "anticoagulants", "antiepileptics", "insulins", "antiarrhythmics",
+          "cardiac_glycosides", "immunosuppressants", "antipsychotics_depot",
+          "narrow_therapeutic_index"
+        ],
+        "tier_2_classes": [
+          "antibiotics", "antihypertensives", "antidiabetics_oral", "diuretics",
+          "thyroid_agents", "antiplatelet", "corticosteroids", "bronchodilators"
+        ],
+        "tier_3_classes": [
+          "vitamins", "supplements", "antacids", "laxatives", "analgesics_mild",
+          "topical_agents"
+        ],
+        "default_tier": 2
+      }
     },
     "duplication": {
       "enabled": true,
-      "match_by": ["medication_code", "normalized_name"],
-      "description": "Flags medications appearing more than once in admission list"
+      "match_by": [
+        "medication_code",
+        "normalized_name"
+      ],
+      "description": "Flags medications appearing more than once in admission list",
+      "severity_by_class": {
+        "status": "DRAFT_PERLU_VALIDASI_APOTEKER",
+        "owner": "TBD-apoteker",
+        "tier_1_classes": [
+          "anticoagulants", "insulins", "analgesics_opioid", "sedatives_hypnotics"
+        ],
+        "tier_2_classes": [
+          "antihypertensives", "antidiabetics_oral", "antibiotics", "diuretics"
+        ],
+        "tier_3_classes": [
+          "vitamins", "supplements", "antacids"
+        ],
+        "default_tier": 2
+      }
+    },
+    "substitution": {
+      "enabled": true,
+      "description": "Flags therapeutic substitutions (different drug, same class)",
+      "severity": {
+        "status": "DRAFT_PERLU_VALIDASI_APOTEKER",
+        "owner": "TBD-apoteker",
+        "formulary_substitution_tier": 3,
+        "non_formulary_substitution_tier": 2,
+        "note": "Substitusi formularium RS dianggap Tier 3 (minor); substitusi di luar formularium Tier 2"
+      }
+    },
+    "allergy_conflict": {
+      "enabled": true,
+      "description": "Flags medications that conflict with documented patient allergies",
+      "severity": {
+        "direct_match_tier": 1,
+        "class_cross_reaction_tier": 2
+      }
+    },
+    "drug_interaction_major": {
+      "enabled": true,
+      "description": "Flags major drug-drug interactions from knowledge/interactions.json",
+      "severity": {
+        "major_tier": 1,
+        "moderate_tier": 2,
+        "minor_tier": 3
+      }
     },
     "dose_mismatch": {
       "enabled": false,
@@ -30,11 +122,40 @@
       "description": "route 100% null in medication_requests (DQI-005)"
     }
   },
+  "high_alert_drug_classes": {
+    "status": "DRAFT_PERLU_VALIDASI_APOTEKER",
+    "owner": "TBD-apoteker",
+    "description": "Kelas obat high-alert berdasarkan ISMP. Wajib dikonfirmasi apoteker.",
+    "classes": [
+      "anticoagulants",
+      "insulins",
+      "analgesics_opioid",
+      "sedatives_hypnotics",
+      "concentrated_electrolytes",
+      "chemotherapy",
+      "neuromuscular_blocking_agents",
+      "cardiovascular_high_alert",
+      "narrow_therapeutic_index"
+    ],
+    "specific_drugs": [
+      "warfarin", "heparin", "enoxaparin", "apixaban", "rivaroxaban", "dabigatran",
+      "insulin", "insulin glargine", "insulin aspart", "insulin lispro",
+      "morphine", "fentanyl", "oxycodone", "methadone",
+      "midazolam", "ketamine", "propofol",
+      "potassium chloride injection", "magnesium sulfate injection", "hypertonic saline",
+      "methotrexate", "vincristine", "cisplatin",
+      "succinylcholine", "rocuronium",
+      "digoxin", "amiodarone", "lidocaine injection",
+      "lithium", "phenytoin", "carbamazepine", "valproic acid", "theophylline",
+      "cyclosporine", "tacrolimus", "methotrexate"
+    ]
+  },
   "normalization": {
     "primary_key": "medication_code",
     "fallback": "normalized_name",
     "case": "lower",
     "strip_dosage_from_name": false,
     "unresolved_flag": "UNRESOLVED_MEDICATION_MATCH"
-  }
+  },
+  "drug_class_map_path": "configs/drug_class_map.json"
 }

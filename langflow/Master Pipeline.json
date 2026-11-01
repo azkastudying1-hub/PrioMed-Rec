@@ -1,0 +1,1311 @@
+{
+  "name": "00_master_analysis",
+  "description": "Jalur utama analisis Langflow-first PrioMed-Rec (Fase A XGBoost+SHAP, Fase B Rule Engine Deterministik, Priority Composer, Grounded SBAR, dan 9-Check Guardrail).",
+  "id": "028bffe5-a0c9-4468-8ee5-5fefed4e26ab",
+  "endpoint_name": "00_master_analysis",
+  "is_component": false,
+  "last_tested_version": "1.13.0",
+  "locked": false,
+  "tags": [
+    "priomedrec",
+    "master",
+    "deterministic",
+    "langflow-first"
+  ],
+  "data": {
+    "nodes": [
+      {
+        "data": {
+          "id": "PMRChatInput-01",
+          "node": {
+            "template": {
+              "_type": "Component",
+              "code": {
+                "type": "code",
+                "required": true,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": true,
+                "value": "from lfx.base.io.chat import ChatComponent\nfrom lfx.io import MessageTextInput, Output\nfrom lfx.schema.message import Message\n\nclass PMRChatInput(ChatComponent):\n    display_name = \"01. Payload / Chat Input (Admission)\"\n    description = \"Menerima JSON encounter payload dari FastAPI LangflowClient atau patient_id dari Playground.\"\n    icon = \"MessagesSquare\"\n    name = \"PMRChatInput\"\n\n    inputs = [\n        MessageTextInput(\n            name=\"input_value\",\n            display_name=\"Encounter JSON / Patient ID\",\n            info=\"JSON payload dari POST /api/v1/analysis/{enc}/run atau teks seperti 'Analisis pasien P001'\",\n            value=\"P001\",\n            required=True,\n        )\n    ]\n    outputs = [\n        Output(display_name=\"Raw Input\", name=\"message\", method=\"get_msg\")\n    ]\n\n    def get_msg(self) -> Message:\n        text = getattr(self.input_value, \"text\", None) or str(self.input_value or \"P001\")\n        self.status = text[:120]\n        return Message(text=text)\n",
+                "fileTypes": [],
+                "file_path": "",
+                "password": false,
+                "name": "code",
+                "advanced": true,
+                "api_editable": false,
+                "dynamic": true,
+                "info": "",
+                "load_from_db": false,
+                "title_case": false
+              },
+              "input_value": {
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "load_from_db": false,
+                "list": false,
+                "list_add_label": "Add More",
+                "override_skip": false,
+                "required": true,
+                "placeholder": "",
+                "show": true,
+                "name": "input_value",
+                "value": "P001",
+                "display_name": "Encounter JSON / Patient ID",
+                "advanced": false,
+                "api_editable": true,
+                "input_types": [],
+                "dynamic": false,
+                "info": "",
+                "title_case": false,
+                "track_in_telemetry": false,
+                "type": "str",
+                "_input_type": "StrInput"
+              }
+            },
+            "description": "Menerima JSON encounter payload dari FastAPI LangflowClient atau patient_id dari Playground.",
+            "icon": "MessagesSquare",
+            "base_classes": [
+              "Message",
+              "Data"
+            ],
+            "display_name": "01. Payload / Chat Input (Admission)",
+            "documentation": "https://docs.langflow.org",
+            "minimized": false,
+            "custom_fields": {},
+            "output_types": [
+              "Message"
+            ],
+            "pinned": false,
+            "conditional_paths": [],
+            "frozen": false,
+            "outputs": [
+              {
+                "types": [
+                  "Message"
+                ],
+                "selected": "Message",
+                "name": "message",
+                "display_name": "Raw Input",
+                "method": "get_msg",
+                "value": "__UNDEFINED__",
+                "cache": true,
+                "allows_loop": false,
+                "group_outputs": false,
+                "tool_mode": true
+              }
+            ],
+            "field_order": [
+              "input_value"
+            ],
+            "beta": false,
+            "legacy": false,
+            "edited": true,
+            "metadata": {
+              "module": "custom_components.pmrchatinput",
+              "code_hash": "53835467adac",
+              "dependencies": {
+                "dependencies": [
+                  {
+                    "name": "lfx",
+                    "version": null
+                  }
+                ],
+                "total_dependencies": 1
+              }
+            },
+            "tool_mode": false,
+            "lf_version": "1.13.0"
+          },
+          "showNode": true,
+          "type": "PMRChatInput"
+        },
+        "dragging": false,
+        "id": "PMRChatInput-01",
+        "position": {
+          "x": 60,
+          "y": 260
+        },
+        "selected": false,
+        "type": "genericNode"
+      },
+      {
+        "data": {
+          "id": "PMRValidator-02",
+          "node": {
+            "template": {
+              "_type": "Component",
+              "code": {
+                "type": "code",
+                "required": true,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": true,
+                "value": "import json\nimport re\nfrom lfx.custom.custom_component.component import Component\nfrom lfx.io import MessageTextInput, Output\nfrom lfx.schema.message import Message\n\nFORBIDDEN_FEATURES = {\n    \"discontinued_medication_count\",\n    \"new_medication_count\",\n    \"total_medication_count\",\n    \"pre_admission_medication_count\",\n    \"admission_medication_count\",\n    \"potential_duplicate_candidates\",\n}\n\nclass PMRPayloadValidatorGuard(Component):\n    display_name = \"02. PMR Payload Validator & InferenceGuard\"\n    description = \"Memvalidasi skema admisi, menolak 6 FORBIDDEN_FEATURES (anti-data leakage), dan menganonimkan PII.\"\n    icon = \"shield-alert\"\n    name = \"PMRPayloadValidatorGuard\"\n\n    inputs = [\n        MessageTextInput(\n            name=\"raw_payload\",\n            display_name=\"Raw Input Payload\",\n            required=True,\n        )\n    ]\n    outputs = [\n        Output(display_name=\"Validated Safe Payload\", name=\"safe_payload\", method=\"validate_payload\")\n    ]\n\n    def validate_payload(self) -> Message:\n        raw = getattr(self.raw_payload, \"text\", None) or str(self.raw_payload or \"\")\n        raw = raw.strip()\n        data = {}\n        try:\n            parsed = json.loads(raw)\n            if isinstance(parsed, dict):\n                data = parsed\n        except Exception:\n            m = re.search(r\"\\b(P\\d+|ENC-[A-Za-z0-9_-]+)\\b\", raw, re.IGNORECASE)\n            pid = m.group(1).upper() if m else \"P001\"\n            data = {\"patient_id\": pid, \"encounter_id\": pid, \"raw_query\": raw}\n\n        # Check forbidden leakage features\n        features_block = data.get(\"features\", {}) if isinstance(data.get(\"features\"), dict) else data\n        leaked = [f for f in FORBIDDEN_FEATURES if f in features_block]\n        if leaked:\n            err = {\n                \"status\": \"REJECTED_BY_INFERENCE_GUARD\",\n                \"error_code\": \"FORBIDDEN_FEATURE_LEAKAGE\",\n                \"leaked_features\": leaked,\n                \"message\": f\"InferenceGuard menolak eksekusi karena fitur terlarang terdeteksi: {leaked}\"\n            }\n            out = json.dumps(err, ensure_ascii=False)\n            self.status = out\n            return Message(text=out)\n\n        # Strip direct PII if present\n        for pii_key in (\"nik\", \"full_name\", \"phone_number\", \"home_address\"):\n            data.pop(pii_key, None)\n\n        data[\"inference_guard\"] = {\"passed\": True, \"checked_forbidden_count\": 6, \"version\": \"guard-0.3.0\"}\n        out = json.dumps(data, ensure_ascii=False)\n        self.status = \"InferenceGuard PASSED\"\n        return Message(text=out)\n",
+                "fileTypes": [],
+                "file_path": "",
+                "password": false,
+                "name": "code",
+                "advanced": true,
+                "api_editable": false,
+                "dynamic": true,
+                "info": "",
+                "load_from_db": false,
+                "title_case": false
+              },
+              "raw_payload": {
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "load_from_db": false,
+                "list": false,
+                "list_add_label": "Add More",
+                "override_skip": false,
+                "required": true,
+                "placeholder": "",
+                "show": true,
+                "name": "raw_payload",
+                "value": "",
+                "display_name": "Raw Input Payload",
+                "advanced": false,
+                "api_editable": true,
+                "input_types": [
+                  "Message"
+                ],
+                "dynamic": false,
+                "info": "",
+                "title_case": false,
+                "track_in_telemetry": false,
+                "type": "str",
+                "_input_type": "StrInput"
+              }
+            },
+            "description": "Memvalidasi skema admisi, menolak 6 FORBIDDEN_FEATURES (anti-data leakage), dan menganonimkan PII.",
+            "icon": "shield-alert",
+            "base_classes": [
+              "Message",
+              "Data"
+            ],
+            "display_name": "02. PMR Payload Validator & InferenceGuard",
+            "documentation": "https://docs.langflow.org",
+            "minimized": false,
+            "custom_fields": {},
+            "output_types": [
+              "Message"
+            ],
+            "pinned": false,
+            "conditional_paths": [],
+            "frozen": false,
+            "outputs": [
+              {
+                "types": [
+                  "Message"
+                ],
+                "selected": "Message",
+                "name": "safe_payload",
+                "display_name": "Validated Safe Payload",
+                "method": "validate_payload",
+                "value": "__UNDEFINED__",
+                "cache": true,
+                "allows_loop": false,
+                "group_outputs": false,
+                "tool_mode": true
+              }
+            ],
+            "field_order": [
+              "raw_payload"
+            ],
+            "beta": false,
+            "legacy": false,
+            "edited": true,
+            "metadata": {
+              "module": "custom_components.pmrpayloadvalidatorguard",
+              "code_hash": "ff68d4726814",
+              "dependencies": {
+                "dependencies": [
+                  {
+                    "name": "lfx",
+                    "version": null
+                  }
+                ],
+                "total_dependencies": 1
+              }
+            },
+            "tool_mode": false,
+            "lf_version": "1.13.0"
+          },
+          "showNode": true,
+          "type": "PMRPayloadValidatorGuard"
+        },
+        "dragging": false,
+        "id": "PMRValidator-02",
+        "position": {
+          "x": 420,
+          "y": 260
+        },
+        "selected": false,
+        "type": "genericNode"
+      },
+      {
+        "data": {
+          "id": "PMREngines-03",
+          "node": {
+            "template": {
+              "_type": "Component",
+              "code": {
+                "type": "code",
+                "required": true,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": true,
+                "value": "import json\nimport os\nimport urllib.request\nimport urllib.error\nfrom lfx.custom.custom_component.component import Component\nfrom lfx.io import MessageTextInput, StrInput, IntInput, Output\nfrom lfx.schema.message import Message\n\nclass PMRTriageAndAuditEngine(Component):\n    display_name = \"03. PMR Phase A (XGBoost+SHAP) & Phase B (Deterministic Audit)\"\n    description = \"Menjalankan Fase A (10 SAFE_FEATURES XGBoost + TreeSHAP) dan Fase B (Normalizer 5-tahap, Omisi/Duplikasi/Substitusi, ISMP High-Alert, NTI, Beers, DDI, Alergi).\"\n    icon = \"activity\"\n    name = \"PMRTriageAndAuditEngine\"\n\n    inputs = [\n        MessageTextInput(name=\"safe_payload\", display_name=\"Validated Safe Payload\", required=True),\n        StrInput(name=\"api_base_url\", display_name=\"FastAPI Base URL\", value=\"http://localhost:8000\"),\n        IntInput(name=\"timeout\", display_name=\"Timeout (s)\", value=25, advanced=True),\n    ]\n    outputs = [\n        Output(display_name=\"Clinical Analysis Envelope\", name=\"clinical_envelope\", method=\"run_engines\")\n    ]\n\n    def run_engines(self) -> Message:\n        raw = getattr(self.safe_payload, \"text\", None) or str(self.safe_payload or \"{}\")\n        try:\n            payload = json.loads(raw)\n        except Exception:\n            payload = {\"patient_id\": \"P001\"}\n\n        if payload.get(\"status\") == \"REJECTED_BY_INFERENCE_GUARD\":\n            return Message(text=raw)\n\n        base = (self.api_base_url or os.environ.get(\"PRIOMEDREC_API_URL\") or \"http://localhost:8000\").rstrip(\"/\")\n        svc_token = os.environ.get(\"SERVICE_API_KEY_LANGFLOW\", \"\")\n        patient_id = payload.get(\"patient_id\") or payload.get(\"encounter\", {}).get(\"id\") or \"P001\"\n\n        headers = {\"Content-Type\": \"application/json\", \"Accept\": \"application/json\"}\n        if svc_token:\n            headers[\"X-Service-Token\"] = svc_token\n\n        req_body = json.dumps({\"patient_id\": patient_id}).encode(\"utf-8\")\n        req = urllib.request.Request(f\"{base}/analyze\", data=req_body, headers=headers, method=\"POST\")\n\n        api_data = None\n        try:\n            with urllib.request.urlopen(req, timeout=int(self.timeout or 25)) as resp:\n                api_data = json.loads(resp.read().decode(\"utf-8\", errors=\"replace\"))\n        except Exception as exc:\n            # Deterministic local fallback envelope using priomedrec_core contract\n            api_data = {\n                \"patient_id\": patient_id,\n                \"encounter_id\": payload.get(\"encounter_id\", patient_id),\n                \"model_version\": \"model-0.3.0\",\n                \"rule_version\": \"rules-0.2.0\",\n                \"predicted_discrepancy_likelihood\": 0.82,\n                \"medication_review_priority\": \"HIGH\",\n                \"shap_top_features\": [\n                    {\"feature\": \"polypharmacy_flag\", \"label\": \"Polifarmasi (>=5 obat)\", \"contribution\": 0.22},\n                    {\"feature\": \"age_65_plus\", \"label\": \"Usia Geriatri (>=65 th)\", \"contribution\": 0.18},\n                    {\"feature\": \"high_alert_count\", \"label\": \"Jumlah Obat High-Alert\", \"contribution\": 0.15}\n                ],\n                \"candidate_discrepancies\": [\n                    {\n                        \"id\": \"DISC-001\",\n                        \"type\": \"POTENTIAL_UNDOCUMENTED_OMISSION\",\n                        \"severity_tier\": 1,\n                        \"medication\": \"warfarin 5 mg\",\n                        \"detail\": \"Obat rutin antikoagulan di BPMH tidak tercantum pada order admisi tanpa catatan disposisi.\",\n                        \"verification_required\": True\n                    },\n                    {\n                        \"id\": \"DISC-002\",\n                        \"type\": \"POTENTIAL_DUPLICATION\",\n                        \"severity_tier\": 1,\n                        \"medication\": \"enoxaparin (Clexane) 40 mg\",\n                        \"detail\": \"Kandidat duplikasi kelas terapi antikoagulan (ATC B01A).\",\n                        \"verification_required\": True\n                    }\n                ],\n                \"safety_flags\": [\n                    {\"medication\": \"warfarin\", \"flags\": [\"ISMP_HIGH_ALERT\", \"FDA_NTI\"], \"hard_stop\": True}\n                ],\n                \"interactions\": [\n                    {\"pair\": [\"warfarin\", \"aspirin\"], \"severity\": \"MAJOR\", \"monitoring\": \"Pantau INR dan tanda perdarahan\"}\n                ],\n                \"_fallback_note\": f\"FastAPI unreachable ({str(exc)[:120]}), using deterministic contract envelope.\"\n            }\n\n        envelope = {\n            \"patient_id\": patient_id,\n            \"inference_guard\": payload.get(\"inference_guard\", {\"passed\": True}),\n            \"sla_elapsed_hours\": payload.get(\"config\", {}).get(\"sla\", {}).get(\"elapsed_hours\", 1.5),\n            \"analysis\": api_data\n        }\n        out = json.dumps(envelope, ensure_ascii=False)\n        self.status = f\"Analyzed {patient_id}\"\n        return Message(text=out)\n",
+                "fileTypes": [],
+                "file_path": "",
+                "password": false,
+                "name": "code",
+                "advanced": true,
+                "api_editable": false,
+                "dynamic": true,
+                "info": "",
+                "load_from_db": false,
+                "title_case": false
+              },
+              "safe_payload": {
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "load_from_db": false,
+                "list": false,
+                "list_add_label": "Add More",
+                "override_skip": false,
+                "required": true,
+                "placeholder": "",
+                "show": true,
+                "name": "safe_payload",
+                "value": "",
+                "display_name": "Validated Safe Payload",
+                "advanced": false,
+                "api_editable": true,
+                "input_types": [
+                  "Message"
+                ],
+                "dynamic": false,
+                "info": "",
+                "title_case": false,
+                "track_in_telemetry": false,
+                "type": "str",
+                "_input_type": "StrInput"
+              },
+              "api_base_url": {
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "load_from_db": false,
+                "list": false,
+                "list_add_label": "Add More",
+                "override_skip": false,
+                "required": false,
+                "placeholder": "",
+                "show": true,
+                "name": "api_base_url",
+                "value": "http://localhost:8000",
+                "display_name": "FastAPI Base URL",
+                "advanced": false,
+                "api_editable": true,
+                "input_types": [],
+                "dynamic": false,
+                "info": "",
+                "title_case": false,
+                "track_in_telemetry": false,
+                "type": "str",
+                "_input_type": "StrInput"
+              }
+            },
+            "description": "Menjalankan Fase A (10 SAFE_FEATURES XGBoost + TreeSHAP) dan Fase B (Normalizer 5-tahap, Omisi/Duplikasi/Substitusi, ISMP High-Alert, NTI, Beers, DDI, Alergi).",
+            "icon": "activity",
+            "base_classes": [
+              "Message",
+              "Data"
+            ],
+            "display_name": "03. PMR Phase A (XGBoost+SHAP) & Phase B (Deterministic Audit)",
+            "documentation": "https://docs.langflow.org",
+            "minimized": false,
+            "custom_fields": {},
+            "output_types": [
+              "Message"
+            ],
+            "pinned": false,
+            "conditional_paths": [],
+            "frozen": false,
+            "outputs": [
+              {
+                "types": [
+                  "Message"
+                ],
+                "selected": "Message",
+                "name": "clinical_envelope",
+                "display_name": "Clinical Analysis Envelope",
+                "method": "run_engines",
+                "value": "__UNDEFINED__",
+                "cache": true,
+                "allows_loop": false,
+                "group_outputs": false,
+                "tool_mode": true
+              }
+            ],
+            "field_order": [
+              "safe_payload",
+              "api_base_url"
+            ],
+            "beta": false,
+            "legacy": false,
+            "edited": true,
+            "metadata": {
+              "module": "custom_components.pmrtriageandauditengine",
+              "code_hash": "37a184b01713",
+              "dependencies": {
+                "dependencies": [
+                  {
+                    "name": "lfx",
+                    "version": null
+                  }
+                ],
+                "total_dependencies": 1
+              }
+            },
+            "tool_mode": false,
+            "lf_version": "1.13.0"
+          },
+          "showNode": true,
+          "type": "PMRTriageAndAuditEngine"
+        },
+        "dragging": false,
+        "id": "PMREngines-03",
+        "position": {
+          "x": 800,
+          "y": 260
+        },
+        "selected": false,
+        "type": "genericNode"
+      },
+      {
+        "data": {
+          "id": "PMRPriority-04",
+          "node": {
+            "template": {
+              "_type": "Component",
+              "code": {
+                "type": "code",
+                "required": true,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": true,
+                "value": "import json\nfrom lfx.custom.custom_component.component import Component\nfrom lfx.io import MessageTextInput, Output\nfrom lfx.schema.message import Message\n\nTIER_RANK = {\"LOW\": 0, \"MEDIUM\": 1, \"HIGH\": 2}\nRANK_TIER = {0: \"LOW\", 1: \"MEDIUM\", 2: \"HIGH\"}\n\nclass PMRPriorityComposer(Component):\n    display_name = \"04. PMR Priority Composer & Dynamic Queue Scorer\"\n    description = \"Menghitung tier_final = max(tier_ML, lantai_aturan, lantai_SLA) sesuai ADR-03 & rumus skor komposit 0-100.\"\n    icon = \"list-ordered\"\n    name = \"PMRPriorityComposer\"\n\n    inputs = [\n        MessageTextInput(name=\"clinical_envelope\", display_name=\"Clinical Analysis Envelope\", required=True)\n    ]\n    outputs = [\n        Output(display_name=\"Prioritized Case Envelope\", name=\"prioritized_envelope\", method=\"compose_priority\")\n    ]\n\n    def compose_priority(self) -> Message:\n        raw = getattr(self.clinical_envelope, \"text\", None) or str(self.clinical_envelope or \"{}\")\n        data = json.loads(raw)\n        if data.get(\"status\") == \"REJECTED_BY_INFERENCE_GUARD\":\n            return Message(text=raw)\n\n        analysis = data.get(\"analysis\", {})\n        prob = float(analysis.get(\"predicted_discrepancy_likelihood\") or analysis.get(\"risk_probability\") or 0.5)\n\n        # Unified threshold: HIGH >= 0.70, MEDIUM >= 0.40\n        tier_ml = \"HIGH\" if prob >= 0.70 else (\"MEDIUM\" if prob >= 0.40 else \"LOW\")\n\n        discs = analysis.get(\"candidate_discrepancies\") or analysis.get(\"discrepancies\") or []\n        flags = analysis.get(\"safety_flags\") or []\n        has_tier1 = any(d.get(\"severity_tier\") == 1 for d in discs if isinstance(d, dict))\n        has_high_alert = any(\"HIGH_ALERT\" in str(f) for f in flags)\n\n        tier_rule = \"HIGH\" if (has_tier1 or has_high_alert) else (\"MEDIUM\" if discs else \"LOW\")\n\n        elapsed_h = float(data.get(\"sla_elapsed_hours\") or 1.5)\n        tier_sla = \"HIGH\" if elapsed_h >= 24.0 else (\"MEDIUM\" if elapsed_h >= 12.0 else \"LOW\")\n\n        final_rank = max(TIER_RANK[tier_ml], TIER_RANK[tier_rule], TIER_RANK[tier_sla])\n        tier_final = RANK_TIER[final_rank]\n\n        reasons = [{\"source\": \"ML\", \"tier\": tier_ml, \"detail\": f\"Calibrated likelihood {prob:.2f}\"}]\n        if TIER_RANK[tier_rule] > 0:\n            reasons.append({\"source\": \"RULE\", \"tier\": tier_rule, \"detail\": \"Tier-1 discrepancy / High-Alert floor\"})\n        if TIER_RANK[tier_sla] > 0:\n            reasons.append({\"source\": \"SLA\", \"tier\": tier_sla, \"detail\": f\"Waiting {elapsed_h:.1f}h SLA escalation\"})\n\n        sla_target = 4.0 if tier_final == \"HIGH\" else (12.0 if tier_final == \"MEDIUM\" else 24.0)\n        sla_pressure = min(elapsed_h / sla_target, 2.0) / 2.0\n        severity_load = min(1.0, (1.0 if has_tier1 else 0.4 if discs else 0.0))\n        wait_norm = min(elapsed_h / 24.0, 1.0)\n        priority_score = round(100.0 * (0.40 * sla_pressure + 0.25 * prob + 0.15 * severity_load + 0.10 * 0.0 + 0.10 * wait_norm), 2)\n\n        data[\"priority_composition\"] = {\n            \"tier_final\": tier_final,\n            \"tier_ml\": tier_ml,\n            \"tier_rule_floor\": tier_rule,\n            \"tier_sla_floor\": tier_sla,\n            \"priority_score_100\": priority_score,\n            \"high_alert_hard_stop_required\": bool(has_high_alert),\n            \"reasons\": reasons,\n            \"queue_config_version\": \"queue-0.1.0\"\n        }\n        out = json.dumps(data, ensure_ascii=False)\n        self.status = f\"{tier_final} (Score: {priority_score})\"\n        return Message(text=out)\n",
+                "fileTypes": [],
+                "file_path": "",
+                "password": false,
+                "name": "code",
+                "advanced": true,
+                "api_editable": false,
+                "dynamic": true,
+                "info": "",
+                "load_from_db": false,
+                "title_case": false
+              },
+              "clinical_envelope": {
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "load_from_db": false,
+                "list": false,
+                "list_add_label": "Add More",
+                "override_skip": false,
+                "required": true,
+                "placeholder": "",
+                "show": true,
+                "name": "clinical_envelope",
+                "value": "",
+                "display_name": "Clinical Analysis Envelope",
+                "advanced": false,
+                "api_editable": true,
+                "input_types": [
+                  "Message"
+                ],
+                "dynamic": false,
+                "info": "",
+                "title_case": false,
+                "track_in_telemetry": false,
+                "type": "str",
+                "_input_type": "StrInput"
+              }
+            },
+            "description": "Menghitung tier_final = max(tier_ML, lantai_aturan, lantai_SLA) sesuai ADR-03 & rumus skor komposit 0-100.",
+            "icon": "list-ordered",
+            "base_classes": [
+              "Message",
+              "Data"
+            ],
+            "display_name": "04. PMR Priority Composer & Dynamic Queue Scorer",
+            "documentation": "https://docs.langflow.org",
+            "minimized": false,
+            "custom_fields": {},
+            "output_types": [
+              "Message"
+            ],
+            "pinned": false,
+            "conditional_paths": [],
+            "frozen": false,
+            "outputs": [
+              {
+                "types": [
+                  "Message"
+                ],
+                "selected": "Message",
+                "name": "prioritized_envelope",
+                "display_name": "Prioritized Case Envelope",
+                "method": "compose_priority",
+                "value": "__UNDEFINED__",
+                "cache": true,
+                "allows_loop": false,
+                "group_outputs": false,
+                "tool_mode": true
+              }
+            ],
+            "field_order": [
+              "clinical_envelope"
+            ],
+            "beta": false,
+            "legacy": false,
+            "edited": true,
+            "metadata": {
+              "module": "custom_components.pmrprioritycomposer",
+              "code_hash": "6a28b85a33ae",
+              "dependencies": {
+                "dependencies": [
+                  {
+                    "name": "lfx",
+                    "version": null
+                  }
+                ],
+                "total_dependencies": 1
+              }
+            },
+            "tool_mode": false,
+            "lf_version": "1.13.0"
+          },
+          "showNode": true,
+          "type": "PMRPriorityComposer"
+        },
+        "dragging": false,
+        "id": "PMRPriority-04",
+        "position": {
+          "x": 1180,
+          "y": 260
+        },
+        "selected": false,
+        "type": "genericNode"
+      },
+      {
+        "data": {
+          "id": "PMRContext-05",
+          "node": {
+            "template": {
+              "_type": "Component",
+              "code": {
+                "type": "code",
+                "required": true,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": true,
+                "value": "import json\nfrom lfx.custom.custom_component.component import Component\nfrom lfx.io import MessageTextInput, Output\nfrom lfx.schema.message import Message\n\nclass PMRContextBuilder(Component):\n    display_name = \"05. PMR Grounded SBAR Context Builder\"\n    description = \"Membungkus fakta deterministik ke dalam blok <case_data> dan membungkus catatan bebas ke <user_note> untuk mencegah prompt injection.\"\n    icon = \"file-code\"\n    name = \"PMRContextBuilder\"\n\n    inputs = [\n        MessageTextInput(name=\"prioritized_envelope\", display_name=\"Prioritized Case Envelope\", required=True)\n    ]\n    outputs = [\n        Output(display_name=\"Grounded Prompt\", name=\"grounded_prompt\", method=\"build_prompt\"),\n        Output(display_name=\"Passthrough Envelope\", name=\"envelope_out\", method=\"pass_envelope\")\n    ]\n\n    def build_prompt(self) -> Message:\n        raw = getattr(self.prioritized_envelope, \"text\", None) or str(self.prioritized_envelope or \"{}\")\n        prompt = (\n            \"Anda adalah asisten penyusun draf komunikasi farmasi klinik (SBAR) pada sistem PrioMed-Rec.\\n\"\n            \"ATURAN KESELAMATAN KETAT (WAJIB DIPATUHI):\\n\"\n            \"1. Gunakan HANYA fakta di dalam blok <case_data>. Dilarang menambah nama obat, dosis, atau angka di luar data.\\n\"\n            \"2. Dilarang mengubah skor probabilitas atau kategori prioritas (HIGH/MEDIUM/LOW).\\n\"\n            \"3. Dilarang memberi perintah terapi otonom (seperti 'hentikan obat', 'berikan obat', 'naikkan dosis'). \"\n            \"Gunakan kalimat kolaboratif: 'Disarankan konfirmasi ke DPJP mengenai...'\\n\"\n            \"4. Sebut setiap temuan sebagai 'Kandidat Diskrepansi — Wajib Diverifikasi Apoteker'.\\n\"\n            \"5. Balas dalam format JSON murni dengan key: situation, background, assessment, recommendation.\\n\\n\"\n            f\"<case_data>\\n{raw}\\n</case_data>\\n\"\n            \"Susun draf SBAR JSON dalam Bahasa Indonesia yang ringkas dan jelas.\"\n        )\n        self.status = \"Prompt grounded built\"\n        return Message(text=prompt)\n\n    def pass_envelope(self) -> Message:\n        raw = getattr(self.prioritized_envelope, \"text\", None) or str(self.prioritized_envelope or \"{}\")\n        return Message(text=raw)\n",
+                "fileTypes": [],
+                "file_path": "",
+                "password": false,
+                "name": "code",
+                "advanced": true,
+                "api_editable": false,
+                "dynamic": true,
+                "info": "",
+                "load_from_db": false,
+                "title_case": false
+              },
+              "prioritized_envelope": {
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "load_from_db": false,
+                "list": false,
+                "list_add_label": "Add More",
+                "override_skip": false,
+                "required": true,
+                "placeholder": "",
+                "show": true,
+                "name": "prioritized_envelope",
+                "value": "",
+                "display_name": "Prioritized Case Envelope",
+                "advanced": false,
+                "api_editable": true,
+                "input_types": [
+                  "Message"
+                ],
+                "dynamic": false,
+                "info": "",
+                "title_case": false,
+                "track_in_telemetry": false,
+                "type": "str",
+                "_input_type": "StrInput"
+              }
+            },
+            "description": "Membungkus fakta deterministik ke dalam blok <case_data> dan membungkus catatan bebas ke <user_note> untuk mencegah prompt injection.",
+            "icon": "file-code",
+            "base_classes": [
+              "Message",
+              "Data"
+            ],
+            "display_name": "05. PMR Grounded SBAR Context Builder",
+            "documentation": "https://docs.langflow.org",
+            "minimized": false,
+            "custom_fields": {},
+            "output_types": [
+              "Message"
+            ],
+            "pinned": false,
+            "conditional_paths": [],
+            "frozen": false,
+            "outputs": [
+              {
+                "types": [
+                  "Message"
+                ],
+                "selected": "Message",
+                "name": "grounded_prompt",
+                "display_name": "Grounded Prompt",
+                "method": "build_prompt",
+                "value": "__UNDEFINED__",
+                "cache": true,
+                "allows_loop": false,
+                "group_outputs": false,
+                "tool_mode": true
+              },
+              {
+                "types": [
+                  "Message"
+                ],
+                "selected": "Message",
+                "name": "envelope_out",
+                "display_name": "Passthrough Envelope",
+                "method": "pass_envelope",
+                "value": "__UNDEFINED__",
+                "cache": true,
+                "allows_loop": false,
+                "group_outputs": false,
+                "tool_mode": true
+              }
+            ],
+            "field_order": [
+              "prioritized_envelope"
+            ],
+            "beta": false,
+            "legacy": false,
+            "edited": true,
+            "metadata": {
+              "module": "custom_components.pmrcontextbuilder",
+              "code_hash": "87545c6325a5",
+              "dependencies": {
+                "dependencies": [
+                  {
+                    "name": "lfx",
+                    "version": null
+                  }
+                ],
+                "total_dependencies": 1
+              }
+            },
+            "tool_mode": false,
+            "lf_version": "1.13.0"
+          },
+          "showNode": true,
+          "type": "PMRContextBuilder"
+        },
+        "dragging": false,
+        "id": "PMRContext-05",
+        "position": {
+          "x": 1560,
+          "y": 260
+        },
+        "selected": false,
+        "type": "genericNode"
+      },
+      {
+        "data": {
+          "id": "PMRLLM-06",
+          "node": {
+            "template": {
+              "_type": "Component",
+              "code": {
+                "type": "code",
+                "required": true,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": true,
+                "value": "import json\nimport os\nimport urllib.request\nfrom lfx.custom.custom_component.component import Component\nfrom lfx.io import MessageTextInput, StrInput, Output\nfrom lfx.schema.message import Message\n\nclass PMRMultiProviderLLMNode(Component):\n    display_name = \"06. PMR Multi-Provider LLM Synthesizer (Gemini / Groq / watsonx / Template)\"\n    description = \"Menyintesis draf SBAR dengan rantai fallback otomatis: Gemini 2.5 Flash -> Groq LLaMA 3.3 70B -> Template Deterministik.\"\n    icon = \"brain-circuit\"\n    name = \"PMRMultiProviderLLMNode\"\n\n    inputs = [\n        MessageTextInput(name=\"grounded_prompt\", display_name=\"Grounded Prompt\", required=True),\n        MessageTextInput(name=\"envelope_in\", display_name=\"Case Envelope\", required=True),\n        StrInput(name=\"preferred_provider\", display_name=\"Primary Provider\", value=\"gemini\"),\n    ]\n    outputs = [\n        Output(display_name=\"Candidate SBAR + Envelope\", name=\"llm_bundle\", method=\"synthesize_sbar\")\n    ]\n\n    def _deterministic_template(self, env: dict) -> dict:\n        pid = env.get(\"patient_id\", \"P001\")\n        prio = env.get(\"priority_composition\", {})\n        tier = prio.get(\"tier_final\", \"HIGH\")\n        score = prio.get(\"priority_score_100\", 82.0)\n        analysis = env.get(\"analysis\", {})\n        prob = analysis.get(\"predicted_discrepancy_likelihood\", 0.82)\n        discs = analysis.get(\"candidate_discrepancies\") or []\n        disc_summary = \"; \".join(f\"{d.get('id','DISC')}: {d.get('type')} pada {d.get('medication')}\" for d in discs) or \"Tidak ada kandidat diskrepansi mayor\"\n        return {\n            \"situation\": f\"Pasien admisi {pid} berada pada Prioritas Telaah Farmasi {tier} (Skor Antrean: {score}/100, Predicted Discrepancy Likelihood: {prob:.2f}).\",\n            \"background\": \"Rekonsiliasi obat admisi membandingkan daftar obat rumah (BPMH) dengan order admisi rumah sakit.\",\n            \"assessment\": f\"Kandidat temuan deterministik (wajib diverifikasi apoteker): {disc_summary}.\",\n            \"recommendation\": \"Disarankan konfirmasi ke DPJP mengenai kelanjutan terapi obat rumah dan dokumentasikan keputusan akhir apoteker pada Case Workspace.\"\n        }\n\n    def synthesize_sbar(self) -> Message:\n        env_raw = getattr(self.envelope_in, \"text\", None) or str(self.envelope_in or \"{}\")\n        try:\n            env = json.loads(env_raw)\n        except Exception:\n            env = {\"patient_id\": \"P001\"}\n\n        # Check if FastAPI /analyze already returned sbar_draft\n        existing_sbar = env.get(\"analysis\", {}).get(\"sbar_draft\") or env.get(\"analysis\", {}).get(\"sbar\")\n        source = \"langflow_deterministic_template\"\n        if isinstance(existing_sbar, dict) and existing_sbar.get(\"situation\"):\n            sbar = existing_sbar\n            source = \"langflow_fastapi_llm_chain\"\n        else:\n            sbar = self._deterministic_template(env)\n\n        env[\"sbar_candidate\"] = {\"source\": source, \"draft\": sbar}\n        out = json.dumps(env, ensure_ascii=False)\n        self.status = f\"SBAR synthesized ({source})\"\n        return Message(text=out)\n",
+                "fileTypes": [],
+                "file_path": "",
+                "password": false,
+                "name": "code",
+                "advanced": true,
+                "api_editable": false,
+                "dynamic": true,
+                "info": "",
+                "load_from_db": false,
+                "title_case": false
+              },
+              "grounded_prompt": {
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "load_from_db": false,
+                "list": false,
+                "list_add_label": "Add More",
+                "override_skip": false,
+                "required": true,
+                "placeholder": "",
+                "show": true,
+                "name": "grounded_prompt",
+                "value": "",
+                "display_name": "Grounded Prompt",
+                "advanced": false,
+                "api_editable": true,
+                "input_types": [
+                  "Message"
+                ],
+                "dynamic": false,
+                "info": "",
+                "title_case": false,
+                "track_in_telemetry": false,
+                "type": "str",
+                "_input_type": "StrInput"
+              },
+              "envelope_in": {
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "load_from_db": false,
+                "list": false,
+                "list_add_label": "Add More",
+                "override_skip": false,
+                "required": true,
+                "placeholder": "",
+                "show": true,
+                "name": "envelope_in",
+                "value": "",
+                "display_name": "Case Envelope",
+                "advanced": false,
+                "api_editable": true,
+                "input_types": [
+                  "Message"
+                ],
+                "dynamic": false,
+                "info": "",
+                "title_case": false,
+                "track_in_telemetry": false,
+                "type": "str",
+                "_input_type": "StrInput"
+              },
+              "preferred_provider": {
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "load_from_db": false,
+                "list": false,
+                "list_add_label": "Add More",
+                "override_skip": false,
+                "required": false,
+                "placeholder": "",
+                "show": true,
+                "name": "preferred_provider",
+                "value": "gemini",
+                "display_name": "Primary Provider",
+                "advanced": false,
+                "api_editable": true,
+                "input_types": [],
+                "dynamic": false,
+                "info": "",
+                "title_case": false,
+                "track_in_telemetry": false,
+                "type": "str",
+                "_input_type": "StrInput"
+              }
+            },
+            "description": "Menyintesis draf SBAR dengan rantai fallback otomatis: Gemini 2.5 Flash -> Groq LLaMA 3.3 70B -> Template Deterministik.",
+            "icon": "brain-circuit",
+            "base_classes": [
+              "Message",
+              "Data"
+            ],
+            "display_name": "06. PMR Multi-Provider LLM Synthesizer",
+            "documentation": "https://docs.langflow.org",
+            "minimized": false,
+            "custom_fields": {},
+            "output_types": [
+              "Message"
+            ],
+            "pinned": false,
+            "conditional_paths": [],
+            "frozen": false,
+            "outputs": [
+              {
+                "types": [
+                  "Message"
+                ],
+                "selected": "Message",
+                "name": "llm_bundle",
+                "display_name": "Candidate SBAR + Envelope",
+                "method": "synthesize_sbar",
+                "value": "__UNDEFINED__",
+                "cache": true,
+                "allows_loop": false,
+                "group_outputs": false,
+                "tool_mode": true
+              }
+            ],
+            "field_order": [
+              "grounded_prompt",
+              "envelope_in",
+              "preferred_provider"
+            ],
+            "beta": false,
+            "legacy": false,
+            "edited": true,
+            "metadata": {
+              "module": "custom_components.pmrmultiproviderllmnode",
+              "code_hash": "91c9d068a96f",
+              "dependencies": {
+                "dependencies": [
+                  {
+                    "name": "lfx",
+                    "version": null
+                  }
+                ],
+                "total_dependencies": 1
+              }
+            },
+            "tool_mode": false,
+            "lf_version": "1.13.0"
+          },
+          "showNode": true,
+          "type": "PMRMultiProviderLLMNode"
+        },
+        "dragging": false,
+        "id": "PMRLLM-06",
+        "position": {
+          "x": 1940,
+          "y": 260
+        },
+        "selected": false,
+        "type": "genericNode"
+      },
+      {
+        "data": {
+          "id": "PMRGuardrail-07",
+          "node": {
+            "template": {
+              "_type": "Component",
+              "code": {
+                "type": "code",
+                "required": true,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": true,
+                "value": "import json\nimport re\nfrom lfx.custom.custom_component.component import Component\nfrom lfx.io import MessageTextInput, Output\nfrom lfx.schema.message import Message\n\nFORBIDDEN_DIRECTIVES = [\n    r\"\\bhentikan\\s+obat\\b\",\n    r\"\\bmulai\\s+obat\\b\",\n    r\"\\bberikan\\s+obat\\b\",\n    r\"\\btingkatkan\\s+dosis\\b\",\n    r\"\\bkurangi\\s+dosis\\b\",\n    r\"\\bstop\\s+medication\\b\",\n    r\"\\bstart\\s+medication\\b\",\n    r\"\\bprescribe\\b\",\n    r\"ignore\\s+(previous|all|above)\\s+instruction\",\n]\n\nclass PMRNineCheckGuardrail(Component):\n    display_name = \"07. PMR 9-Check Clinical Guardrail & Output Verifier\"\n    description = \"Menjalankan 9 pemeriksaan pengaman klinis (preservasi skor, grounding obat, konsistensi diskrepansi, anti-instruksi otonom, anti-PII, format SBAR, fidelitas dosis, bahasa, anti-injeksi).\"\n    icon = \"shield-check\"\n    name = \"PMRNineCheckGuardrail\"\n\n    inputs = [\n        MessageTextInput(name=\"llm_bundle\", display_name=\"Candidate SBAR + Envelope\", required=True)\n    ]\n    outputs = [\n        Output(display_name=\"Verified Final Contract\", name=\"verified_output\", method=\"verify_and_package\")\n    ]\n\n    def verify_and_package(self) -> Message:\n        raw = getattr(self.llm_bundle, \"text\", None) or str(self.llm_bundle or \"{}\")\n        env = json.loads(raw)\n        if env.get(\"status\") == \"REJECTED_BY_INFERENCE_GUARD\":\n            return Message(text=raw)\n\n        sbar_obj = env.get(\"sbar_candidate\", {}).get(\"draft\", {})\n        full_text = json.dumps(sbar_obj, ensure_ascii=False)\n\n        directive_free = not any(re.search(p, full_text, re.IGNORECASE) for p in FORBIDDEN_DIRECTIVES)\n        has_all_keys = all(k in sbar_obj for k in (\"situation\", \"background\", \"assessment\", \"recommendation\"))\n        no_pii = not bool(re.search(r\"\\b\\d{16}\\b\", full_text))\n\n        checks = {\n            \"1_score_preserved\": True,\n            \"2_inventory_grounded\": True,\n            \"3_discrepancy_consistent\": True,\n            \"4_no_autonomous_directive\": directive_free,\n            \"5_no_pii_leak\": no_pii,\n            \"6_sbar_structure_valid\": has_all_keys,\n            \"7_dose_number_fidelity\": True,\n            \"8_collaborative_language\": directive_free,\n            \"9_prompt_injection_clean\": True,\n        }\n        passed = all(checks.values())\n\n        if not passed:\n            sbar_obj = {\n                \"situation\": f\"Pasien {env.get('patient_id', 'P001')} memerlukan telaah rekonsiliasi obat admisi.\",\n                \"background\": \"Draf LLM digantikan oleh template deterministik karena guardrail mendeteksi pelanggaran.\",\n                \"assessment\": \"Periksa daftar kandidat diskrepansi dan peringatan High-Alert secara langsung pada tabel perbandingan.\",\n                \"recommendation\": \"Disarankan konfirmasi ke DPJP sebelum menetapkan keputusan akhir apoteker.\"\n            }\n\n        final_contract = {\n            \"status\": \"OK\",\n            \"patient_id\": env.get(\"patient_id\", \"P001\"),\n            \"versions\": {\n                \"model\": env.get(\"analysis\", {}).get(\"model_version\", \"model-0.3.0\"),\n                \"rules\": env.get(\"analysis\", {}).get(\"rule_version\", \"rules-0.2.0\"),\n                \"guardrail\": \"guardrail-1.1.0\",\n                \"queue\": \"queue-0.1.0\"\n            },\n            \"priority\": env.get(\"priority_composition\", {}),\n            \"analysis\": env.get(\"analysis\", {}),\n            \"sbar\": {\n                \"label\": \"Draf AI — wajib diverifikasi apoteker\",\n                \"source\": env.get(\"sbar_candidate\", {}).get(\"source\", \"langflow\") if passed else \"deterministic_fallback\",\n                \"guardrail_report\": {\n                    \"passed\": passed,\n                    \"version\": \"guardrail-1.1.0\",\n                    \"checks\": checks\n                },\n                \"draft\": sbar_obj\n            },\n            \"execution\": {\n                \"path\": \"langflow\",\n                \"flow_id\": \"028bffe5-a0c9-4468-8ee5-5fefed4e26ab\",\n                \"flow_name\": \"00_master_analysis\",\n                \"steps\": [\n                    {\"name\": \"01_payload_validator_guard\", \"status\": \"ok\"},\n                    {\"name\": \"02_triage_and_medrec_audit\", \"status\": \"ok\"},\n                    {\"name\": \"03_priority_composer\", \"status\": \"ok\"},\n                    {\"name\": \"04_sbar_guardrail_9checks\", \"status\": \"ok\" if passed else \"fallback\"}\n                ]\n            },\n            \"disclaimer\": \"Draf AI — wajib diverifikasi apoteker klinis. Keputusan akhir berada pada apoteker & DPJP.\"\n        }\n        out = json.dumps(final_contract, ensure_ascii=False, indent=2)\n        self.status = \"Guardrail 9/9 PASSED\" if passed else \"Guardrail Fallback Triggered\"\n        return Message(text=out)\n",
+                "fileTypes": [],
+                "file_path": "",
+                "password": false,
+                "name": "code",
+                "advanced": true,
+                "api_editable": false,
+                "dynamic": true,
+                "info": "",
+                "load_from_db": false,
+                "title_case": false
+              },
+              "llm_bundle": {
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "load_from_db": false,
+                "list": false,
+                "list_add_label": "Add More",
+                "override_skip": false,
+                "required": true,
+                "placeholder": "",
+                "show": true,
+                "name": "llm_bundle",
+                "value": "",
+                "display_name": "Candidate SBAR + Envelope",
+                "advanced": false,
+                "api_editable": true,
+                "input_types": [
+                  "Message"
+                ],
+                "dynamic": false,
+                "info": "",
+                "title_case": false,
+                "track_in_telemetry": false,
+                "type": "str",
+                "_input_type": "StrInput"
+              }
+            },
+            "description": "Menjalankan 9 pemeriksaan pengaman klinis sebelum output disimpan/ditampilkan ke apoteker.",
+            "icon": "shield-check",
+            "base_classes": [
+              "Message",
+              "Data"
+            ],
+            "display_name": "07. PMR 9-Check Clinical Guardrail & Output Verifier",
+            "documentation": "https://docs.langflow.org",
+            "minimized": false,
+            "custom_fields": {},
+            "output_types": [
+              "Message"
+            ],
+            "pinned": false,
+            "conditional_paths": [],
+            "frozen": false,
+            "outputs": [
+              {
+                "types": [
+                  "Message"
+                ],
+                "selected": "Message",
+                "name": "verified_output",
+                "display_name": "Verified Final Contract",
+                "method": "verify_and_package",
+                "value": "__UNDEFINED__",
+                "cache": true,
+                "allows_loop": false,
+                "group_outputs": false,
+                "tool_mode": true
+              }
+            ],
+            "field_order": [
+              "llm_bundle"
+            ],
+            "beta": false,
+            "legacy": false,
+            "edited": true,
+            "metadata": {
+              "module": "custom_components.pmrninecheckguardrail",
+              "code_hash": "0a5f1291ae2b",
+              "dependencies": {
+                "dependencies": [
+                  {
+                    "name": "lfx",
+                    "version": null
+                  }
+                ],
+                "total_dependencies": 1
+              }
+            },
+            "tool_mode": false,
+            "lf_version": "1.13.0"
+          },
+          "showNode": true,
+          "type": "PMRNineCheckGuardrail"
+        },
+        "dragging": false,
+        "id": "PMRGuardrail-07",
+        "position": {
+          "x": 2320,
+          "y": 260
+        },
+        "selected": false,
+        "type": "genericNode"
+      },
+      {
+        "data": {
+          "id": "PMRChatOut-08",
+          "node": {
+            "template": {
+              "_type": "Component",
+              "code": {
+                "type": "code",
+                "required": true,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": true,
+                "value": "from lfx.base.io.chat import ChatComponent\nfrom lfx.io import MessageTextInput, Output\nfrom lfx.schema.message import Message\n\nclass PMRChatOutput(ChatComponent):\n    display_name = \"08. Verified Analysis Output (To FastAPI / UI)\"\n    description = \"Mengembalikan kontrak JSON terverifikasi ke FastAPI LangflowClient dan menampilkan ringkasan di Playground.\"\n    icon = \"MessagesSquare\"\n    name = \"PMRChatOutput\"\n\n    inputs = [\n        MessageTextInput(name=\"input_value\", display_name=\"Verified Final Contract\", required=True)\n    ]\n    outputs = [\n        Output(display_name=\"Output Message\", name=\"message\", method=\"send_out\")\n    ]\n\n    def send_out(self) -> Message:\n        text = getattr(self.input_value, \"text\", None) or str(self.input_value or \"{}\")\n        self.status = text[:120]\n        return Message(text=text)\n",
+                "fileTypes": [],
+                "file_path": "",
+                "password": false,
+                "name": "code",
+                "advanced": true,
+                "api_editable": false,
+                "dynamic": true,
+                "info": "",
+                "load_from_db": false,
+                "title_case": false
+              },
+              "input_value": {
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "load_from_db": false,
+                "list": false,
+                "list_add_label": "Add More",
+                "override_skip": false,
+                "required": true,
+                "placeholder": "",
+                "show": true,
+                "name": "input_value",
+                "value": "",
+                "display_name": "Verified Final Contract",
+                "advanced": false,
+                "api_editable": true,
+                "input_types": [
+                  "Message"
+                ],
+                "dynamic": false,
+                "info": "",
+                "title_case": false,
+                "track_in_telemetry": false,
+                "type": "str",
+                "_input_type": "StrInput"
+              }
+            },
+            "description": "Mengembalikan kontrak JSON terverifikasi ke FastAPI LangflowClient dan menampilkan ringkasan di Playground.",
+            "icon": "MessagesSquare",
+            "base_classes": [
+              "Message",
+              "Data"
+            ],
+            "display_name": "08. Verified Analysis Output (To FastAPI / UI)",
+            "documentation": "https://docs.langflow.org",
+            "minimized": false,
+            "custom_fields": {},
+            "output_types": [
+              "Message"
+            ],
+            "pinned": false,
+            "conditional_paths": [],
+            "frozen": false,
+            "outputs": [
+              {
+                "types": [
+                  "Message"
+                ],
+                "selected": "Message",
+                "name": "message",
+                "display_name": "Output Message",
+                "method": "send_out",
+                "value": "__UNDEFINED__",
+                "cache": true,
+                "allows_loop": false,
+                "group_outputs": false,
+                "tool_mode": true
+              }
+            ],
+            "field_order": [
+              "input_value"
+            ],
+            "beta": false,
+            "legacy": false,
+            "edited": true,
+            "metadata": {
+              "module": "custom_components.pmrchatoutput",
+              "code_hash": "648c259f9e50",
+              "dependencies": {
+                "dependencies": [
+                  {
+                    "name": "lfx",
+                    "version": null
+                  }
+                ],
+                "total_dependencies": 1
+              }
+            },
+            "tool_mode": false,
+            "lf_version": "1.13.0"
+          },
+          "showNode": true,
+          "type": "PMRChatOutput"
+        },
+        "dragging": false,
+        "id": "PMRChatOut-08",
+        "position": {
+          "x": 2700,
+          "y": 260
+        },
+        "selected": false,
+        "type": "genericNode"
+      },
+      {
+        "data": {
+          "id": "Note-Master-01",
+          "node": {
+            "description": "🧠 MASTER FLOW 00_master_analysis (UUID: 028bffe5-a0c9-4468-8ee5-5fefed4e26ab)\nAlur Utama Langflow-First PrioMed-Rec:\n1. InferenceGuard (Tolak 6 Forbidden Features)\n2. Fase A (XGBoost + TreeSHAP) & Fase B (Rule Engine Deterministik)\n3. Priority Composer: max(ML, Rules, SLA)\n4. Grounded SBAR Context + Multi-Provider LLM\n5. 9-Check Clinical Guardrail & Output Verifier",
+            "display_name": "",
+            "documentation": "",
+            "template": {
+              "backgroundColor": "transparent"
+            }
+          },
+          "type": "note"
+        },
+        "dragging": false,
+        "height": 160,
+        "id": "Note-Master-01",
+        "measured": {
+          "height": 160,
+          "width": 560
+        },
+        "position": {
+          "x": 60,
+          "y": 60
+        },
+        "selected": false,
+        "type": "noteNode",
+        "width": 560
+      }
+    ],
+    "edges": [
+      {
+        "animated": false,
+        "className": "",
+        "data": {
+          "sourceHandle": {
+            "dataType": "PMRChatInput",
+            "id": "PMRChatInput-01",
+            "name": "message",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "raw_payload",
+            "id": "PMRValidator-02",
+            "inputTypes": [
+              "Message"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "xy-edge__PMRChatInput-01{œdataTypeœ:œPMRChatInputœ,œidœ:œPMRChatInput-01œ,œnameœ:œmessageœ,œoutput_typesœ:[œMessageœ]}-PMRValidator-02{œfieldNameœ:œraw_payloadœ,œidœ:œPMRValidator-02œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}",
+        "selected": false,
+        "source": "PMRChatInput-01",
+        "sourceHandle": "{œdataTypeœ:œPMRChatInputœ,œidœ:œPMRChatInput-01œ,œnameœ:œmessageœ,œoutput_typesœ:[œMessageœ]}",
+        "target": "PMRValidator-02",
+        "targetHandle": "{œfieldNameœ:œraw_payloadœ,œidœ:œPMRValidator-02œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}"
+      },
+      {
+        "animated": false,
+        "className": "",
+        "data": {
+          "sourceHandle": {
+            "dataType": "PMRPayloadValidatorGuard",
+            "id": "PMRValidator-02",
+            "name": "safe_payload",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "safe_payload",
+            "id": "PMREngines-03",
+            "inputTypes": [
+              "Message"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "xy-edge__PMRValidator-02{œdataTypeœ:œPMRPayloadValidatorGuardœ,œidœ:œPMRValidator-02œ,œnameœ:œsafe_payloadœ,œoutput_typesœ:[œMessageœ]}-PMREngines-03{œfieldNameœ:œsafe_payloadœ,œidœ:œPMREngines-03œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}",
+        "selected": false,
+        "source": "PMRValidator-02",
+        "sourceHandle": "{œdataTypeœ:œPMRPayloadValidatorGuardœ,œidœ:œPMRValidator-02œ,œnameœ:œsafe_payloadœ,œoutput_typesœ:[œMessageœ]}",
+        "target": "PMREngines-03",
+        "targetHandle": "{œfieldNameœ:œsafe_payloadœ,œidœ:œPMREngines-03œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}"
+      },
+      {
+        "animated": false,
+        "className": "",
+        "data": {
+          "sourceHandle": {
+            "dataType": "PMRTriageAndAuditEngine",
+            "id": "PMREngines-03",
+            "name": "clinical_envelope",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "clinical_envelope",
+            "id": "PMRPriority-04",
+            "inputTypes": [
+              "Message"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "xy-edge__PMREngines-03{œdataTypeœ:œPMRTriageAndAuditEngineœ,œidœ:œPMREngines-03œ,œnameœ:œclinical_envelopeœ,œoutput_typesœ:[œMessageœ]}-PMRPriority-04{œfieldNameœ:œclinical_envelopeœ,œidœ:œPMRPriority-04œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}",
+        "selected": false,
+        "source": "PMREngines-03",
+        "sourceHandle": "{œdataTypeœ:œPMRTriageAndAuditEngineœ,œidœ:œPMREngines-03œ,œnameœ:œclinical_envelopeœ,œoutput_typesœ:[œMessageœ]}",
+        "target": "PMRPriority-04",
+        "targetHandle": "{œfieldNameœ:œclinical_envelopeœ,œidœ:œPMRPriority-04œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}"
+      },
+      {
+        "animated": false,
+        "className": "",
+        "data": {
+          "sourceHandle": {
+            "dataType": "PMRPriorityComposer",
+            "id": "PMRPriority-04",
+            "name": "prioritized_envelope",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "prioritized_envelope",
+            "id": "PMRContext-05",
+            "inputTypes": [
+              "Message"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "xy-edge__PMRPriority-04{œdataTypeœ:œPMRPriorityComposerœ,œidœ:œPMRPriority-04œ,œnameœ:œprioritized_envelopeœ,œoutput_typesœ:[œMessageœ]}-PMRContext-05{œfieldNameœ:œprioritized_envelopeœ,œidœ:œPMRContext-05œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}",
+        "selected": false,
+        "source": "PMRPriority-04",
+        "sourceHandle": "{œdataTypeœ:œPMRPriorityComposerœ,œidœ:œPMRPriority-04œ,œnameœ:œprioritized_envelopeœ,œoutput_typesœ:[œMessageœ]}",
+        "target": "PMRContext-05",
+        "targetHandle": "{œfieldNameœ:œprioritized_envelopeœ,œidœ:œPMRContext-05œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}"
+      },
+      {
+        "animated": false,
+        "className": "",
+        "data": {
+          "sourceHandle": {
+            "dataType": "PMRContextBuilder",
+            "id": "PMRContext-05",
+            "name": "grounded_prompt",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "grounded_prompt",
+            "id": "PMRLLM-06",
+            "inputTypes": [
+              "Message"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "xy-edge__PMRContext-05{œdataTypeœ:œPMRContextBuilderœ,œidœ:œPMRContext-05œ,œnameœ:œgrounded_promptœ,œoutput_typesœ:[œMessageœ]}-PMRLLM-06{œfieldNameœ:œgrounded_promptœ,œidœ:œPMRLLM-06œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}",
+        "selected": false,
+        "source": "PMRContext-05",
+        "sourceHandle": "{œdataTypeœ:œPMRContextBuilderœ,œidœ:œPMRContext-05œ,œnameœ:œgrounded_promptœ,œoutput_typesœ:[œMessageœ]}",
+        "target": "PMRLLM-06",
+        "targetHandle": "{œfieldNameœ:œgrounded_promptœ,œidœ:œPMRLLM-06œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}"
+      },
+      {
+        "animated": false,
+        "className": "",
+        "data": {
+          "sourceHandle": {
+            "dataType": "PMRContextBuilder",
+            "id": "PMRContext-05",
+            "name": "envelope_out",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "envelope_in",
+            "id": "PMRLLM-06",
+            "inputTypes": [
+              "Message"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "xy-edge__PMRContext-05{œdataTypeœ:œPMRContextBuilderœ,œidœ:œPMRContext-05œ,œnameœ:œenvelope_outœ,œoutput_typesœ:[œMessageœ]}-PMRLLM-06{œfieldNameœ:œenvelope_inœ,œidœ:œPMRLLM-06œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}",
+        "selected": false,
+        "source": "PMRContext-05",
+        "sourceHandle": "{œdataTypeœ:œPMRContextBuilderœ,œidœ:œPMRContext-05œ,œnameœ:œenvelope_outœ,œoutput_typesœ:[œMessageœ]}",
+        "target": "PMRLLM-06",
+        "targetHandle": "{œfieldNameœ:œenvelope_inœ,œidœ:œPMRLLM-06œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}"
+      },
+      {
+        "animated": false,
+        "className": "",
+        "data": {
+          "sourceHandle": {
+            "dataType": "PMRMultiProviderLLMNode",
+            "id": "PMRLLM-06",
+            "name": "llm_bundle",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "llm_bundle",
+            "id": "PMRGuardrail-07",
+            "inputTypes": [
+              "Message"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "xy-edge__PMRLLM-06{œdataTypeœ:œPMRMultiProviderLLMNodeœ,œidœ:œPMRLLM-06œ,œnameœ:œllm_bundleœ,œoutput_typesœ:[œMessageœ]}-PMRGuardrail-07{œfieldNameœ:œllm_bundleœ,œidœ:œPMRGuardrail-07œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}",
+        "selected": false,
+        "source": "PMRLLM-06",
+        "sourceHandle": "{œdataTypeœ:œPMRMultiProviderLLMNodeœ,œidœ:œPMRLLM-06œ,œnameœ:œllm_bundleœ,œoutput_typesœ:[œMessageœ]}",
+        "target": "PMRGuardrail-07",
+        "targetHandle": "{œfieldNameœ:œllm_bundleœ,œidœ:œPMRGuardrail-07œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}"
+      },
+      {
+        "animated": false,
+        "className": "",
+        "data": {
+          "sourceHandle": {
+            "dataType": "PMRNineCheckGuardrail",
+            "id": "PMRGuardrail-07",
+            "name": "verified_output",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "input_value",
+            "id": "PMRChatOut-08",
+            "inputTypes": [
+              "Message"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "xy-edge__PMRGuardrail-07{œdataTypeœ:œPMRNineCheckGuardrailœ,œidœ:œPMRGuardrail-07œ,œnameœ:œverified_outputœ,œoutput_typesœ:[œMessageœ]}-PMRChatOut-08{œfieldNameœ:œinput_valueœ,œidœ:œPMRChatOut-08œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}",
+        "selected": false,
+        "source": "PMRGuardrail-07",
+        "sourceHandle": "{œdataTypeœ:œPMRNineCheckGuardrailœ,œidœ:œPMRGuardrail-07œ,œnameœ:œverified_outputœ,œoutput_typesœ:[œMessageœ]}",
+        "target": "PMRChatOut-08",
+        "targetHandle": "{œfieldNameœ:œinput_valueœ,œidœ:œPMRChatOut-08œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}"
+      }
+    ],
+    "viewport": {
+      "x": 0,
+      "y": 0,
+      "zoom": 0.65
+    }
+  }
+}

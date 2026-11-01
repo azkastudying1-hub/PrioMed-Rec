@@ -1,0 +1,11 @@
+# Langflow 1.13.0 image with PrioMed-Rec deterministic core and components.
+FROM langflowai/langflow:1.13.0
+
+USER root
+RUN mkdir -p /app/priomedrec_core /app/custom_components && chown -R 1000:1000 /app/priomedrec_core /app/custom_components
+COPY priomedrec_core /app/priomedrec_core
+COPY langflow/components /app/custom_components
+COPY langflow/requirements.langflow.txt /tmp/requirements.langflow.txt
+RUN if [ -s /tmp/requirements.langflow.txt ]; then pip install --no-cache-dir -r /tmp/requirements.langflow.txt; fi
+ENV PYTHONPATH=/app
+USER 1000

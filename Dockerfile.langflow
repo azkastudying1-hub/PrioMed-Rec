@@ -1,9 +1,0 @@
-# LF-001: Langflow is isolated from the FastAPI image. LF-002/LF-003 add the
-# reviewed core package and components after their parity tests exist.
-FROM langflowai/langflow:1.12.2
-
-USER root
-RUN mkdir -p /app/custom_components /app/priomedrec && chown -R 1000:1000 /app/custom_components /app/priomedrec
-COPY langflow/requirements.langflow.txt /tmp/requirements.langflow.txt
-RUN if [ -s /tmp/requirements.langflow.txt ]; then pip install --no-cache-dir -r /tmp/requirements.langflow.txt; fi
-USER 1000

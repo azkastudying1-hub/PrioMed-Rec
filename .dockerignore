@@ -1,0 +1,16 @@
+# Prevent local secrets, virtual environments, build output and legacy artefacts
+# from entering the production API image.
+.git
+.env
+.venv
+.pytest_cache
+__pycache__
+**/__pycache__
+web/node_modules
+web/dist
+_archive
+archive
+medrec_xgboost/.venv
+medrec_xgboost/outputs
+*.pyc
+*.pyo

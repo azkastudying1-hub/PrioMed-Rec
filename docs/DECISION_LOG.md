@@ -409,3 +409,350 @@ Run `run_stabilization.py` which executes:
 - `models/eval_report_v4.json`: v4 schema copy
 - `models/priomed_prioritization_model_calibrated.pkl`: calibrated artifact
 - `docs/ML_AUDIT_REPORT.md`, `docs/MODEL_CARD.md`, `docs/evaluation_protocol.md`: updated
+
+
+---
+
+## ARCHITECTURE DECISION RECORDS (ADR-01 … ADR-12)
+> Diadopsi dari `PRIOMEDREC_STRATEGIC_DEVELOPMENT_PLAN.md` Bagian 4.3 pada Fase 0.
+> Setiap perubahan terhadap ADR ini harus dicatat sebagai entri baru di dokumen ini.
+
+### ADR-01 — FastAPI = Inti Deterministik; Langflow = Lapisan Orkestrasi Narasi
+
+**Tanggal:** Fase 0
+**Status:** SUPERSEDED BY ADR-01b untuk orkestrasi Langflow.
+
+**Keputusan:**
+FastAPI adalah inti deterministik yang bertanggung jawab atas semua auth, data, ML, rules, SLA, audit, dan guardrail. Langflow diposisikan sebagai lapisan orkestrasi narasi dan copilot (tampil sebagai "otak orkestrasi AI" untuk juri hackathon), bukan sebagai gerbang keselamatan.
+
+**Alasan:**
+Keselamatan tidak boleh bergantung pada tool visual/eksternal yang bisa berubah. Langflow tetap tampil sebagai komponen AI penting untuk narasi hackathon.
+
+**Implikasi:**
+- Rule engine, ML inference, dan guardrail selalu dijalankan di FastAPI
+- Langflow boleh gagal tanpa mematikan fungsi inti
+
+---
+
+### ADR-02 — Browser TIDAK Pernah Memanggil Langflow/LLM Langsung
+
+**Tanggal:** Fase 0
+**Status:** DECIDED — ditegaskan kembali dan diperjelas oleh ADR-02b.
+
+**Keputusan:**
+Alur wajib: UI → `POST /api/v1/ai/sbar` → FastAPI → Langflow (atau fallback LLM) → guardrail → response. Browser tidak boleh memanggil endpoint Langflow secara langsung.
+
+**Alasan:**
+Menjamin auth, audit, guardrail wajib, dan kunci API tidak terpapar ke browser.
+
+**Gap yang ditemukan:**
+`web/src/api/langflow.ts` saat ini **melanggar ADR-02** — memanggil Langflow dari browser. Harus diperbaiki di A-301.
+
+**Implikasi:**
+- `web/src/api/langflow.ts` perlu direfaktor ke hanya memanggil `/api/v1/ai/*`
+- Variabel `VITE_LANGFLOW_*` tidak boleh mengekspos API key Langflow ke browser
+
+---
+
+### ADR-03 — Prioritas Final = max(ML, Aturan, SLA); Aturan & SLA Hanya Bisa Menaikkan
+
+**Tanggal:** Fase 0
+**Status:** DECIDED
+
+**Keputusan:**
+`tier_final = max(tier_ML, tier_floor_dari_aturan, tier_floor_dari_SLA)`. Aturan klinis dan SLA hanya boleh menaikkan prioritas, tidak pernah menurunkan. Urutan dalam tier: sisa SLA terkecil dulu, lalu probabilitas ML tertinggi.
+
+**Alasan:**
+Mencegah ML menurunkan prioritas pasien yang jelas berbahaya. Keselamatan ditegakkan oleh aturan deterministik.
+
+---
+
+### ADR-04 — Label UI: "Prioritas Telaah Farmasi"
+
+**Tanggal:** Fase 0
+**Status:** DECIDED
+
+**Keputusan:**
+Semua label UI menggunakan "Prioritas Telaah Farmasi" (bukan "Risiko Pasien" atau "Triase"). Skor ditampilkan sebagai "Kemungkinan ada diskrepansi obat".
+
+**Alasan:**
+Menghindari klaim triase klinis yang dapat menimbulkan masalah medikolegal.
+
+---
+
+### ADR-05 — SQLAlchemy 2.x + Alembic; SQLite (demo) → PostgreSQL (pilot)
+
+**Tanggal:** Fase 0
+**Status:** DECIDED
+
+**Keputusan:**
+Database menggunakan SQLAlchemy 2.x sebagai ORM dan Alembic untuk migrasi skema. Demo menggunakan SQLite; pilot menggunakan PostgreSQL. Kode bisnis tidak dikunci ke salah satu database.
+
+**Alasan:**
+Migrasi bersih dan portabel tanpa mengubah kode aplikasi.
+
+**Gap yang ditemukan:**
+Saat ini `api/database.py` menggunakan `sqlite3` raw tanpa SQLAlchemy. Harus diperbaiki di B-101.
+
+---
+
+### ADR-06 — Auth JWT (access+refresh) + RBAC; API Key Hanya Untuk Layanan
+
+**Tanggal:** Fase 0
+**Status:** DECIDED
+
+**Keputusan:**
+Login pengguna menggunakan JWT (access token 15 mnt + refresh token). API key (X-API-Key) hanya untuk layanan antar-server (Langflow, MCP) dengan `actor_type` yang dicatat di audit. Identitas aktor selalu dari token, bukan dari body request.
+
+**Alasan:**
+Audit dapat dipercaya hanya jika identitas pengguna diverifikasi oleh server, bukan oleh klien.
+
+**Gap yang ditemukan:**
+Saat ini tidak ada JWT, `pharmacist_id` dikirim dari body. Harus diperbaiki di B-103.
+
+---
+
+### ADR-07 — Tool Tulis MCP Hanya Membuat DRAFT_REVIEW
+
+**Tanggal:** Fase 0
+**Status:** DECIDED
+
+**Keputusan:**
+Tool `draft_pharmacist_review` di MCP hanya membuat entri `DRAFT_REVIEW`. Konfirmasi final wajib dari UI oleh apoteker. Tool MCP tidak boleh membuat entri review final.
+
+**Alasan:**
+Menjaga HITL (Human-in-the-Loop) walau interaksi dilakukan via percakapan dengan IBM Bob.
+
+**Gap yang ditemukan:**
+`mcp_server.py` saat ini memiliki `record_pharmacist_review` yang langsung menyimpan ke `/review` (final). Harus diubah ke draft di A-307.
+
+---
+
+### ADR-08 — medrec_xgboost/ Dibekukan Sebagai Riset
+
+**Tanggal:** Fase 0
+**Status:** DECIDED
+
+**Keputusan:**
+`medrec_xgboost/` hanya berisi notebook riset. Promosi model ke `models/` hanya via `scripts/promote_model.py` dengan gerbang evaluasi otomatis. Dilarang menyalin file pkl langsung dari `medrec_xgboost/`.
+
+**Alasan:**
+Mencegah schema mismatch antara model riset dan model produksi.
+
+---
+
+### ADR-09 — Setiap Fitur ML Memiliki Availability Stage
+
+**Tanggal:** Fase 0
+**Status:** DECIDED
+
+**Keputusan:**
+Setiap fitur ML diberi label kapan tersedia: `registrasi` / `setelah_bpmh` / `setelah_order`. Inferensi tidak boleh menggunakan fitur yang belum tersedia pada saat permintaan dibuat.
+
+**Alasan:**
+Mencegah fitur dari masa depan (temporal leakage) masuk ke inferensi.
+
+**Detail:**
+- Tersedia saat registrasi: `age`, `age_65_plus`, `gender_encoded`, `active_condition_count`, `prior_encounter_count`, `allergy_count`, `has_drug_allergy`
+- Tersedia setelah BPMH/daftar obat diketahui: `polypharmacy_flag`, `high_alert_flag`, `high_alert_count`
+
+---
+
+### ADR-10 — Nama Model LLM dan Urutan Fallback dari Konfigurasi
+
+**Tanggal:** Fase 0
+**Status:** DECIDED
+
+**Keputusan:**
+`LLM_MODEL_NAME`, `LLM_FALLBACK_MODEL`, urutan chain, dan timeout dibaca dari `.env` / DB, tidak pernah hardcoded. Health check berkala memverifikasi ketersediaan model.
+
+**Alasan:**
+Model dapat dipensiunkan oleh penyedia tanpa mengubah kode.
+
+**Status implementasi:**
+Sudah sebagian diimplementasikan di `src/llm/service.py` — perlu penambahan health check proaktif dan penyedia Ollama/watsonx (A-306).
+
+---
+
+### ADR-11 — Guardrail Dijalankan di Backend
+
+**Tanggal:** Fase 0
+**Status:** SUPERSEDED BY ADR-11b untuk guardrail pada orkestrasi Langflow.
+
+**Keputusan:**
+Guardrail LLM dijalankan sebagai paket Python bersama di backend. Langflow memanggil endpoint guardrail atau mengimpor paket tersebut. Guardrail tidak boleh hanya ada di frontend atau di Langflow saja.
+
+**Alasan:**
+Satu sumber kebenaran; versi guardrail tercatat di setiap entri audit.
+
+---
+
+### ADR-12 — Audit Append-Only dengan Rantai Hash
+
+**Tanggal:** Fase 0
+**Status:** DECIDED
+
+**Keputusan:**
+`audit_entries` append-only dengan kolom `seq`, `prev_hash`, `hash = SHA256(prev_hash ‖ canonical_json(payload))`. Trigger menolak UPDATE dan DELETE. Job verifikasi harian. Koreksi dilakukan via entri baru (amendment), bukan mengubah entri lama.
+
+**Alasan:**
+Medikolegal dan akreditasi RS membutuhkan audit trail yang tidak dapat diubah.
+
+**Gap yang ditemukan:**
+Saat ini `audit_entries` menggunakan `INSERT OR REPLACE` tanpa hash. Harus diperbaiki di B-107.
+
+---
+
+## ADR Langflow-first (LF-001, 2026-10-29)
+
+### ADR-01b — Langflow-first; FastAPI sebagai gerbang dan cadangan
+
+**Status:** DECIDED — menggantikan ADR-01 untuk orkestrasi Langflow.
+Master flow Langflow menjadi jalur utama analisis. FastAPI tetap pemilik auth, state, persistensi, audit, output verifier, dan fallback lokal agar keselamatan klinis tidak bergantung pada Langflow.
+
+### ADR-02b — Browser → FastAPI → Langflow
+
+**Status:** DECIDED — memperjelas ADR-02.
+Browser tidak memegang API key atau memanggil Langflow/LLM langsung. FastAPI meneruskan REST/SSE terautentikasi. Gap lama sudah tertutup oleh `web/src/api/langflow.ts` dan kontrak ini tetap wajib.
+
+### ADR-11b — Guardrail dalam flow dan verifikasi ulang API
+
+**Status:** DECIDED — menggantikan ADR-11 untuk orkestrasi Langflow.
+Guardrail deterministik berjalan dalam Flow 03/04 dan Output Verifier FastAPI memeriksa ulang hasil sebelum penyimpanan.
+
+### ADR-13 — `priomedrec_core` sebagai sumber tunggal deterministik
+
+**Status:** DECIDED.
+Komponen PMR hanyalah adaptor tipis ke paket pure Python; jalur Langflow dan lokal harus memakai kode yang sama.
+
+### ADR-14 — Paritas Langflow↔lokal adalah gerbang CI
+
+**Status:** DECIDED.
+Golden set harus identik untuk temuan/tier dan skor dalam toleransi `1e-6`; kegagalan menolak rilis.
+
+### ADR-15 — HITL Langflow melengkapi audit review FastAPI
+
+**Status:** DECIDED.
+Resume checkpoint eksternal diuji melalui Workflow API v2. Bila tidak layak, review UI→FastAPI tetap pencatatan resmi dan Flow 05 hanya jalur Playground/Bob/MCP.
+
+### ADR-16 — Policies beta adalah lapisan tambahan
+
+**Status:** DECIDED.
+Kode guard hasil generate wajib direview, dites adversarial, dan dikomit; tidak menggantikan guardrail, RBAC, atau HITL.
+
+### ADR-17 — Trace Langflow masuk audit resmi
+
+**Status:** DECIDED.
+`trace_id`, hash flow, execution path, durasi, dan ringkasan langkah disimpan di `analysis_runs` dan audit entry.
+
+### ADR-18 — Pin dan allow-list runtime Langflow
+
+**Status:** DECIDED (runtime verification pending).
+Image dipin `1.13.0`, rilis stabil terbaru yang tercatat di rilis resmi pada tanggal audit; tag image Docker aktif. Virtualenv lokal masih 1.12.5 dan bukan bukti versi image. Auto-login nonaktif; kredensial environment wajib; komponen operator-installed di `LANGFLOW_COMPONENTS_PATH` read-only. `docker compose config --quiet` lulus; health/spike BLOCKED sampai Docker tersedia.
+
+---
+
+## ADR-19 — Dua Antrean (A: BPMH, B: Telaah) + Pull-based + Lease 15 Menit
+
+**Tanggal:** Fase Q0  
+**Status:** DECIDED  
+**Referensi:** PRIOMEDREC_QUEUE_MANAGEMENT_PLAN.md §3.1, §3.2, D1  
+
+**Konteks:**
+Satu antrean tunggal mencampur TTK (mengisi BPMH) dan apoteker (menelaah), menyebabkan aksi yang salah aktor, antarmuka yang membingungkan, dan metriklagi yang tidak bisa dibedakan.
+
+**Keputusan:**
+1. **Dua antrean terpisah:** Antrean A (BPMH) untuk TTK/magang, Antrean B (Telaah) untuk apoteker klinis, dengan urutan berbeda.
+2. **Pull-based:** `POST /queue/next` — sistem menarikkan entri teratas yang sesuai cakupan dan menguncinya atomik. Tidak ada "browsing ribuan baris".
+3. **Lease 15 menit:** Klaim kedaluwarsa otomatis setelah 15 menit tanpa heartbeat; entri kembali ke antrean dengan usia menunggu tetap (tidak mulai dari nol).
+4. **Antrean `PARKED_DPJP`** terpisah dari antrean B — tidak menghukum SLA apoteker saat menunggu DPJP.
+
+**Alasan:**
+- Pull-based adalah satu-satunya model yang berfungsi pada ratusan–ribuan entri tanpa membebani apoteker dengan scrolling.
+- Dua antrean memungkinkan metrik terpisah (waktu BPMH vs waktu telaah) dan penugasan berbasis peran.
+- Lease dengan TTL mencegah kasus "menggantung" saat apoteker tutup tab atau ganti shift.
+
+**Implikasi:**
+- Tabel `queue_entries` diperlukan (Q-001).
+- `priomedrec_core/queue_engine.py` diperlukan (Q-002).
+- State machine perlu transisi ADMIT → A dan BPMH_SUBMIT → B (Q-003).
+
+---
+
+## ADR-20 — Jalur Antrean Bebas LLM/Langflow per Pasien
+
+**Tanggal:** Fase Q0  
+**Status:** DECIDED  
+**Referensi:** PRIOMEDREC_QUEUE_MANAGEMENT_PLAN.md §12, Q5 aturan antrean  
+
+**Konteks:**
+Antrean mengelola ratusan–ribuan entri dengan tick setiap 60 detik. Memanggil LLM per pasien saat tick akan menghabiskan biaya API dan menimbulkan latensi yang tak dapat diterima (target tick < 800 ms untuk 5.000 entri).
+
+**Keputusan:**
+Semua fungsi jalur antrean — skor Fase A massal, aging, kuota, SLA tick, klaim/release, lease cleanup — **dijalankan oleh `priomedrec_core` (batch, deterministik) tanpa panggilan LLM/Langflow per pasien per tick**.
+
+Langflow dipakai untuk:
+- Analisis per kasus (Fase B, SBAR, guardrail) — dipanggil saat BPMH submit atau kasus dibuka
+- Copilot (penjelasan posisi, ringkasan antrean) — baca-saja, per permintaan pengguna
+- Notifikasi narasi (webhook opsional) — hanya ringkasan teks
+
+**Alasan:**
+- Kehandalan: antrean harus tetap bergerak walau Langflow/LLM mati (G7).
+- Biaya: 5.000 entri × tick per menit × harga token LLM = tidak berkelanjutan.
+- Deterministik: skor antrean harus reproducible dan dapat diaudit tanpa ambiguitas LLM.
+
+**Implikasi:**
+- `queue_engine.py` tidak boleh mengimpor LLM client.
+- Uji ketahanan wajib: matikan Langflow → antrean tetap bergerak (G7).
+
+---
+
+## ADR-21 — Kuota HIGH-ML ≤ 25% per Bangsal; Lantai Aturan Klinis Tidak Pernah Turun
+
+**Tanggal:** Fase Q0  
+**Status:** DECIDED  
+**Referensi:** PRIOMEDREC_QUEUE_MANAGEMENT_PLAN.md §4.2, Q1 aturan antrean; ADR-03  
+
+**Konteks:**
+Jika semua entri dengan ML score ≥ 0.65 diberi tier HIGH tanpa batas, antrean bisa penuh dengan HIGH yang kehilangan makna klinis. Sebaliknya, kasus dengan temuan Tier-1 atau obat high-alert harus selalu HIGH tanpa pengecualian.
+
+**Keputusan:**
+1. **Kuota HIGH-ML:** Entri yang naik HIGH *hanya* karena skor ML dibatasi ≤ 25% dari antrean aktif per bangsal (default, dapat dikonfigurasi). Sisanya dikelompokkan MEDIUM.
+2. **Lantai aturan klinis tidak dikuota:** `tier_source = RULE` (temuan Tier-1, obat high-alert, konflik alergi) selalu HIGH, tidak dibatasi kuota, tidak dapat diturunkan oleh mode lonjakan, kepadatan, atau faktor apapun.
+3. **Histeresis:** Perubahan tier akibat ML hanya berlaku jika selisih skor melampaui margin (mencegah baris melompat-loncat).
+4. **UI transparan:** Badge "HIGH (aturan)" vs "HIGH (ML)" dan persentil ML ditampilkan.
+
+**Alasan:**
+Mengacu Q1 (aturan antrean): "Lantai aturan klinis … TIDAK PERNAH diturunkan oleh kuota, mode lonjakan, histeresis, atau kepadatan." Kuota ML hanya berlaku untuk klaim ML yang belum terkonfirmasi aturan.
+
+**Implikasi:**
+- `queue_engine.apply_ml_quota()` wajib mengecualikan entri dengan `tier_source=RULE`.
+- Uji properti P2 & P3 (lantai aturan tidak turun, tier tidak turun tanpa re-triage).
+- Kebijakan ini butuh konfirmasi apoteker untuk nilai 25% (CRQ-091).
+
+---
+
+## ADR-22 — Hospital Simulator Memanggil API Asli; Semua Output Berlabel "Data Simulasi"
+
+**Tanggal:** Fase Q0  
+**Status:** DECIDED  
+**Referensi:** PRIOMEDREC_QUEUE_MANAGEMENT_PLAN.md §9, Q6 aturan antrean, D5  
+
+**Konteks:**
+Demo statis (10 pasien) tidak meyakinkan juri atau kepala instalasi farmasi. Simulator tiruan (data palsu langsung di UI) tidak menguji sistem secara end-to-end.
+
+**Keputusan:**
+1. **Simulator memanggil API asli** (`POST /queue/{id}/admit`, `POST /queue/next`, dll.) menggunakan JWT akun demo per peran (apoteker1, ttk1, koordinator1). Seluruh sistem — auth, antrean, SLA, SSE, audit, Langflow — benar-benar dipakai.
+2. **Ukuran default demo: M** (300 entri terbuka, 3/2/1 apoteker per shift). Ukuran L/XL hanya untuk uji beban.
+3. **Seed reprodusibel:** `--seed 42` menjamin dua jalankan menghasilkan laporan identik.
+4. **Label wajib di semua output:** `"Data simulasi — parameter berbasis asumsi, belum dikalibrasi dengan RS"` — tidak boleh dihilangkan.
+5. **Skenario:** `evening_surge` (default demo), `staff_shortage`, `llm_outage`, `ml_outage`.
+
+**Alasan:**
+Simulator yang memanggil API asli membuktikan bahwa sistem berfungsi end-to-end di bawah beban realistis, bukan sekadar mockup. Label wajib melindungi dari klaim palsu bahwa angka simulasi adalah data RS nyata (Q6).
+
+**Implikasi:**
+- `simulator/` paket baru (Q-007).
+- Simulator harus punya akun demo dengan JWT yang valid.
+- Laporan akhir simulasi (`docs/SIMULATION_REPORT.md`) digunakan untuk kalibrasi bobot/kuota di Q-002.
+- Angka simulasi **tidak boleh** dikutip sebagai hasil RS nyata dalam presentasi.

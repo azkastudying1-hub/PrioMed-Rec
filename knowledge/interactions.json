@@ -1,0 +1,102 @@
+[
+  {
+    "drug_a": "warfarin",
+    "drug_b": "aspirin",
+    "reason": "Risiko perdarahan meningkat — kombinasi antikoagulan kumarin dan antiplatelet memiliki efek aditif pada hemostasis.",
+    "monitoring": "Pantau INR, tanda perdarahan (melena, urin merah, pusing mendadak). Pertimbangkan PPI profilaksis GI.",
+    "source": "Label obat resmi FDA (warfarin) + ACC/AHA 2023 Anticoagulation Guideline",
+    "source_url": "https://www.fda.gov/media/75674/download",
+    "year": 2023,
+    "status": "NEEDS_PHARMACIST_REVIEW"
+  },
+  {
+    "drug_a": "warfarin",
+    "drug_b": "amiodarone",
+    "reason": "Amiodarone menghambat CYP2C9 — metabolisme warfarin melambat sehingga kadar warfarin meningkat, memperpanjang INR secara signifikan.",
+    "monitoring": "Kurangi dosis warfarin 30-50% saat memulai amiodarone. Pantau INR ketat setiap 3-5 hari selama 4-6 minggu pertama.",
+    "source": "Lexicomp Drug Interactions (referensi institusi) + FDA warfarin label",
+    "source_url": "https://www.fda.gov/media/75674/download",
+    "year": 2023,
+    "status": "NEEDS_PHARMACIST_REVIEW"
+  },
+  {
+    "drug_a": "metformin",
+    "drug_b": "contrast media",
+    "reason": "Risiko asidosis laktat pada pasien dengan gangguan ginjal akut pasca-kontras. Metformin diekskresikan ginjal — penumpukan pada AKI meningkatkan risiko.",
+    "monitoring": "Tahan metformin 48 jam sebelum dan sesudah prosedur kontras IV. Periksa kreatinin/eGFR sebelum melanjutkan.",
+    "source": "ACR Manual on Contrast Media 2023 (American College of Radiology)",
+    "source_url": "https://www.acr.org/Clinical-Resources/Contrast-Manual",
+    "year": 2023,
+    "status": "NEEDS_PHARMACIST_REVIEW"
+  },
+  {
+    "drug_a": "digoxin",
+    "drug_b": "amiodarone",
+    "reason": "Amiodarone meningkatkan kadar digoxin 70-100% melalui inhibisi P-glikoprotein dan pengurangan klirens ginjal.",
+    "monitoring": "Kurangi dosis digoxin 50% saat memulai amiodarone. Pantau kadar digoxin dan tanda toksisitas (mual, bradikardia, aritmia).",
+    "source": "Goodman & Gilman's Pharmacology 13th Ed. + FDA digoxin label",
+    "source_url": "https://www.accessdata.fda.gov/drugsatfda_docs/label/2017/009330s039lbl.pdf",
+    "year": 2022,
+    "status": "NEEDS_PHARMACIST_REVIEW"
+  },
+  {
+    "drug_a": "heparin",
+    "drug_b": "aspirin",
+    "reason": "Risiko perdarahan aditif — aspirin menghambat agregasi trombosit sementara heparin menginhibisi faktor koagulasi.",
+    "monitoring": "Pantau aPTT sesuai protokol, tanda perdarahan mayor. Evaluasi indikasi aspirin bersamaan.",
+    "source": "ISMP Anticoagulation Safety Guidelines + ACC/AHA 2023",
+    "source_url": "https://www.ismp.org",
+    "year": 2023,
+    "status": "NEEDS_PHARMACIST_REVIEW"
+  },
+  {
+    "drug_a": "ACE inhibitor",
+    "drug_b": "ARB",
+    "reason": "Dual RAAS blockade meningkatkan risiko hiperkalemia, hipotensi berat, dan gangguan ginjal akut tanpa manfaat tambahan pada sebagian besar kondisi.",
+    "monitoring": "Periksa elektrolit (K+), kreatinin, dan tekanan darah. Kombinasi ini umumnya tidak direkomendasikan kecuali indikasi sangat spesifik.",
+    "source": "JNC 8 Guidelines + ONTARGET trial (NEJM 2008)",
+    "source_url": "https://www.nejm.org/doi/full/10.1056/NEJMoa0801317",
+    "year": 2022,
+    "status": "NEEDS_PHARMACIST_REVIEW"
+  },
+  {
+    "drug_a": "fluoroquinolone",
+    "drug_b": "antacid",
+    "reason": "Kation divalen (Mg2+, Al3+, Ca2+) dalam antasid membentuk kelat dengan fluorokuinolon sehingga absorpsi oral menurun hingga 70-90%.",
+    "monitoring": "Beri jarak minimal 2 jam antara fluorokuinolon dan antasid/suplemen kalsium/zat besi.",
+    "source": "FDA drug label ciprofloxacin + Pharmacokinetic review",
+    "source_url": "https://www.accessdata.fda.gov/drugsatfda_docs/label/2016/019537s087lbl.pdf",
+    "year": 2022,
+    "status": "NEEDS_PHARMACIST_REVIEW"
+  },
+  {
+    "drug_a": "statin",
+    "drug_b": "amlodipine",
+    "reason": "Amlodipine menginhibisi CYP3A4 secara moderat — kadar simvastatin dan lovastatin dapat meningkat, menaikkan risiko miopati/rhabdomyolysis.",
+    "monitoring": "Batasi simvastatin ≤20 mg/hari bersama amlodipine. Pantau nyeri otot, CK jika ada gejala.",
+    "source": "FDA safety communication simvastatin 2011 + Prescribing Information",
+    "source_url": "https://www.fda.gov/drugs/drug-safety-and-availability/fda-drug-safety-communication-new-restrictions-contraindications-and-dose-limitations-zocor",
+    "year": 2022,
+    "status": "NEEDS_PHARMACIST_REVIEW"
+  },
+  {
+    "drug_a": "metformin",
+    "drug_b": "alcohol",
+    "reason": "Alkohol meningkatkan risiko asidosis laktat dengan metformin, terutama pada konsumsi berlebihan atau gangguan fungsi hati.",
+    "monitoring": "Edukasi pasien tentang pembatasan alkohol. Pantau fungsi hati dan laktat jika ada konsumsi alkohol signifikan.",
+    "source": "Metformin prescribing information (FDA) + UpToDate Clinical Decision Support",
+    "source_url": "https://www.accessdata.fda.gov/drugsatfda_docs/label/2017/020357s038s039lbl.pdf",
+    "year": 2022,
+    "status": "NEEDS_PHARMACIST_REVIEW"
+  },
+  {
+    "drug_a": "tacrolimus",
+    "drug_b": "fluconazole",
+    "reason": "Fluconazole adalah inhibitor kuat CYP3A4 dan CYP2C19 — kadar tacrolimus dapat meningkat 4-8 kali lipat, menaikkan risiko nefrotoksisitas dan neurotoksisitas.",
+    "monitoring": "Monitor kadar trough tacrolimus setiap 2-3 hari, fungsi ginjal, dan neurotoksisitas. Pertimbangkan pengurangan dosis tacrolimus 50-75%.",
+    "source": "Tacrolimus prescribing information + Transplant pharmacology guidelines",
+    "source_url": "https://www.accessdata.fda.gov/drugsatfda_docs/label/2015/050708s034lbl.pdf",
+    "year": 2023,
+    "status": "NEEDS_PHARMACIST_REVIEW"
+  }
+]

@@ -125,21 +125,31 @@ This model assists pharmacists in deciding **which admitted patients to review f
 ---
 
 ## Test Set Results (model-0.3.0, XGBoost, leakage-safe features)
+> **Sumber:** `models/eval_report_v4.json` (STAB-001) — versi ini lebih akurat dari eval_report_v3.json
 
-| Metric | Value |
-|---|---|
-| ROC-AUC | **0.8967** |
-| PR-AUC | **0.9666** |
-| F1 | 0.8410 |
-| Recall | 0.7574 |
-| Precision | 0.9454 |
-| Brier Score | 0.1322 |
-| Top-10% Recall | 0.1318 |
-| **Top-20% Recall** | **0.2635** |
-| Top-30% Recall | 0.3953 |
-| Permutation test (1000 seeds) | p = 0.0000, 11.72σ above mean |
-| CV ROC (5×5 repeated) | 0.887 ± 0.012 |
-| Calibration (post-isotonic) MACE | < 0.010 — **GOOD** |
+| Metric | Value | Catatan |
+|---|---|---|
+| ROC-AUC | **0.8967** | Valid; 11.72σ di atas distribusi permutasi |
+| PR-AUC | **0.9666** | ⚠ Dipengaruhi prevalensi tinggi (76%); baseline PR-AUC ≈ prevalensi |
+| F1 | 0.8410 | — |
+| Recall | 0.7574 | — |
+| Precision | 0.9454 | — |
+| Brier Score | 0.1322 | Pre-calibration |
+| **Top-10% Recall (Lift@10%)** | **0.1318 (Lift 1.32x)** | Model vs random di top-10% antrean |
+| **Top-20% Recall (Lift@20%)** | **0.2635 (Lift 1.32x)** | Model vs random di top-20% antrean |
+| **Top-30% Recall (Lift@30%)** | **0.3953 (Lift 1.32x)** | Model vs random di top-30% antrean |
+| Permutation test (1000 seeds) | p = 0.0000, 11.72σ above mean | XGBoost; max permuted ROC = 0.6149 |
+| CV ROC (5×5 repeated) | 0.887 ± 0.012 (CI95: [0.882, 0.892]) | Patient-level GroupKFold |
+| Calibration — XGBoost_cal (post-isotonic) | Brier = 0.1116; MACE < 0.010 — **GOOD** | STAB-001 |
+
+### Interpretasi Lift Jujur
+| Lift@K | Nilai | Interpretasi |
+|---|---|---|
+| Lift@10% | 1.32x | Jika apoteker menelaah 10% teratas, menangkap 13.2% kasus vs 10% random |
+| Lift@20% | 1.32x | Menangkap 26.4% vs 20% random |
+| Lift@30% | 1.32x | Menangkap 39.5% vs 30% random |
+
+> ⚠️ **Catatan Lift:** Lift Top-K = 1.32x adalah moderate. Ini bukan angka yang mengejutkan. Karena prevalensi sangat tinggi (76%), hampir semua encounter dalam top-K sudah positif berdasarkan base rate. Nilai ini **lebih bermakna sebagai bukti bahwa model bisa mengurutkan** daripada sebagai klaim akurasi klinis. Jika prevalensi diturunkan ke ~40% (L2/L3 label), lift akan lebih berarti.
 
 **Confusion matrix (test set, n=4,733):**
 

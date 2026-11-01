@@ -32,3 +32,39 @@ Thumbs.db
 
 # Jupyter Notebook Checkpoints
 .ipynb_checkpoints/
+
+# Database
+data/priomed.db
+data/*.db
+data/*.db-shm
+data/*.db-wal
+data/*.db-journal
+*.sqlite
+*.sqlite3
+
+# Logs
+logs/
+*.log
+
+# Archive & legacy workspaces
+_archive/
+PrioMed-Rec/
+medrec_xgboost/
+streamlit_app/
+
+# Frontend build & dependencies
+web/node_modules/
+web/dist/
+web/.vite/
+
+# One-off test outputs at repo root
+/test_q004_out.txt
+/test_results.txt
+/package-lock.json
+
+# Langflow local state
+langflow_data/
+.streamlit/
+
+# Archive folder - legacy/unused files
+archive/

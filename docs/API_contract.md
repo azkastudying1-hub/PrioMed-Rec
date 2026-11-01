@@ -27,6 +27,16 @@ Currently no authentication (MVP prototype). Add API key auth before any product
 
 ## Endpoints
 
+### `POST /api/v1/analysis/{encounter_id}/run` — Langflow-first (LF-006)
+
+Endpoint baru untuk menjalankan analisis terstruktur melalui Langflow, dengan pipeline lokal deterministik sebagai fallback. Endpoint legacy `POST /analyze` tetap tersedia.
+
+**Request body:** `AnalysisInput` — `patient_id`, `features`, `pre_admission_meds`, `admission_meds`, `allergies`, dan konfigurasi SLA opsional. `encounter_id` berasal dari path.
+
+**Response:** `AnalysisResult` berisi `phase_a`, `phase_b`, `priority`, `versions`, `safety_notice`, serta metadata `execution` (`path`, `trace_id`, `flow_version_hash`, `duration_ms`, `fallback_reason`).
+
+**Catatan status implementasi:** route mengembalikan metadata execution tetapi belum menyimpan `analysis_runs`/audit trace. `flow_version_hash` masih placeholder, dan verifier saat ini hanya subset dari tujuh cek yang direncanakan. Jangan anggap response sebagai bukti flow Langflow benar-benar berjalan; periksa `execution.path`.
+
 ### `GET /health`
 
 Liveness check and version identifiers.

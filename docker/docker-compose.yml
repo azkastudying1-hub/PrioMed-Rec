@@ -1,0 +1,98 @@
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+    ports:
+      - "8000:8000"
+    env_file:
+      - ../.env
+    environment:
+      # Models and reference data are immutable image artefacts. Keep mutable
+      # operational state separate so a Docker volume never masks the model.
+      - DB_PATH=/app/runtime/priomed.db
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://localhost}
+    volumes:
+      - priomed_runtime:/app/runtime
+      - priomed_logs:/app/logs
+    networks:
+      - priomed_internal
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  langflow:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.langflow
+    image: priomedrec-langflow:1.13.0
+    ports:
+      # Canvas demo is local-host only; service-to-service traffic is internal.
+      - "127.0.0.1:7860:7860"
+    environment:
+      - LANGFLOW_DATABASE_URL=sqlite:////app/langflow.db
+      - LANGFLOW_CONFIG_DIR=/app/langflow_data
+      - LANGFLOW_AUTO_LOGIN=false
+      - LANGFLOW_SUPERUSER=${LANGFLOW_SUPERUSER:?Set LANGFLOW_SUPERUSER in .env}
+      - LANGFLOW_SUPERUSER_PASSWORD=${LANGFLOW_SUPERUSER_PASSWORD:?Set LANGFLOW_SUPERUSER_PASSWORD in .env}
+      - LANGFLOW_SECRET_KEY=${LANGFLOW_SECRET_KEY:?Set LANGFLOW_SECRET_KEY in .env}
+      - LANGFLOW_COMPONENTS_PATH=/app/custom_components
+      - LANGFLOW_ALLOW_CUSTOM_COMPONENTS=true
+      - LANGFLOW_ALLOW_PUBLIC_CUSTOM_COMPONENTS=false
+      - LANGFLOW_BLOCK_CODE_INTERPRETER_COMPONENTS=true
+      - PRIOMEDREC_API_URL=http://api:8000
+      - SERVICE_API_KEY_LANGFLOW=${SERVICE_API_KEY_LANGFLOW}
+      - GOOGLE_API_KEY=${LLM_API_KEY}
+      - LANGFLOW_RESTRICT_LOCAL_FILE_ACCESS=true
+    env_file:
+      - ../.env
+    volumes:
+      - langflow_data:/app/langflow_data
+      # PMR components are server-installed and read-only; flow JSON is importable.
+      - ./langflow/components:/app/custom_components:ro
+      - ./langflow:/app/langflow_flows:ro
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - priomed_internal
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:7860/health')"]
+      interval: 30s
+      timeout: 15s
+      retries: 5
+      start_period: 60s
+
+  web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.web
+      args:
+        VITE_DATA_MODE: live
+    ports:
+      - "80:80"
+    networks:
+      - priomed_internal
+    depends_on:
+      api:
+        condition: service_healthy
+      langflow:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  priomed_runtime:
+    driver: local
+  priomed_logs:
+    driver: local
+  langflow_data:
+    driver: local
+
+networks:
+  priomed_internal:
+    internal: true

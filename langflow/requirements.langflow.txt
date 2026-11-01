@@ -1,2 +1,3 @@
-# LF-001 intentionally has no extra packages.
-# LF-002/LF-003 add only pinned requirements after the image compatibility spike.
+# PrioMed-Rec Langflow custom component dependencies
+# Diinstall saat Docker build Langflow image
+httpx>=0.27.0,<0.29.0

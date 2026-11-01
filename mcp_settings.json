@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "priomedrec": {
+      "command": "python",
+      "args": ["mcp_server.py"],
+      "env": {
+        "PRIOMEDREC_API_URL": "http://127.0.0.1:8000"
+      }
+    }
+  }
+}

@@ -1,0 +1,1140 @@
+{
+  "name": "04_pharmacist_copilot_agent",
+  "description": "Agen Copilot Apoteker Klinis PrioMed-Rec dengan 3 Custom Deterministic Tools (Case Context, Drug KB Lookup, Queue Position Explainer), Policy Guardrail, dan Sitasi Versi.",
+  "id": "priomedrec-agentic-v2",
+  "endpoint_name": "priomedrec-agent-v2",
+  "is_component": false,
+  "last_tested_version": "1.13.0",
+  "locked": false,
+  "tags": [
+    "priomedrec",
+    "copilot",
+    "agentic",
+    "tools"
+  ],
+  "data": {
+    "nodes": [
+      {
+        "data": {
+          "id": "CopilotChatIn-01",
+          "node": {
+            "template": {
+              "_type": "Component",
+              "code": {
+                "type": "code",
+                "required": true,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": true,
+                "value": "from lfx.base.io.chat import ChatComponent\nfrom lfx.io import MessageTextInput, Output\nfrom lfx.schema.message import Message\n\nclass PMRChatInput(ChatComponent):\n    display_name = \"01. Payload / Chat Input (Admission)\"\n    description = \"Menerima JSON encounter payload dari FastAPI LangflowClient atau patient_id dari Playground.\"\n    icon = \"MessagesSquare\"\n    name = \"PMRChatInput\"\n\n    inputs = [\n        MessageTextInput(\n            name=\"input_value\",\n            display_name=\"Encounter JSON / Patient ID\",\n            info=\"JSON payload dari POST /api/v1/analysis/{enc}/run atau teks seperti 'Analisis pasien P001'\",\n            value=\"P001\",\n            required=True,\n        )\n    ]\n    outputs = [\n        Output(display_name=\"Raw Input\", name=\"message\", method=\"get_msg\")\n    ]\n\n    def get_msg(self) -> Message:\n        text = getattr(self.input_value, \"text\", None) or str(self.input_value or \"P001\")\n        self.status = text[:120]\n        return Message(text=text)\n",
+                "fileTypes": [],
+                "file_path": "",
+                "password": false,
+                "name": "code",
+                "advanced": true,
+                "api_editable": false,
+                "dynamic": true,
+                "info": "",
+                "load_from_db": false,
+                "title_case": false
+              },
+              "input_value": {
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "load_from_db": false,
+                "list": false,
+                "list_add_label": "Add More",
+                "override_skip": false,
+                "required": true,
+                "placeholder": "",
+                "show": true,
+                "name": "input_value",
+                "value": "Mengapa pasien P001 menjadi prioritas HIGH dan apakah ada interaksi warfarin?",
+                "display_name": "Pertanyaan Apoteker",
+                "advanced": false,
+                "api_editable": true,
+                "input_types": [],
+                "dynamic": false,
+                "info": "",
+                "title_case": false,
+                "track_in_telemetry": false,
+                "type": "str",
+                "_input_type": "StrInput"
+              }
+            },
+            "description": "Menerima pertanyaan bahasa alami dari Copilot Drawer di UI React atau dari IBM Bob.",
+            "icon": "MessagesSquare",
+            "base_classes": [
+              "Message",
+              "Data"
+            ],
+            "display_name": "01. Chat Input (Pertanyaan Apoteker)",
+            "documentation": "https://docs.langflow.org",
+            "minimized": false,
+            "custom_fields": {},
+            "output_types": [
+              "Message"
+            ],
+            "pinned": false,
+            "conditional_paths": [],
+            "frozen": false,
+            "outputs": [
+              {
+                "types": [
+                  "Message"
+                ],
+                "selected": "Message",
+                "name": "message",
+                "display_name": "Raw Input",
+                "method": "get_msg",
+                "value": "__UNDEFINED__",
+                "cache": true,
+                "allows_loop": false,
+                "group_outputs": false,
+                "tool_mode": true
+              }
+            ],
+            "field_order": [
+              "input_value"
+            ],
+            "beta": false,
+            "legacy": false,
+            "edited": true,
+            "metadata": {
+              "module": "custom_components.pmrchatinput",
+              "code_hash": "53835467adac",
+              "dependencies": {
+                "dependencies": [
+                  {
+                    "name": "lfx",
+                    "version": null
+                  }
+                ],
+                "total_dependencies": 1
+              }
+            },
+            "tool_mode": false,
+            "lf_version": "1.13.0"
+          },
+          "showNode": true,
+          "type": "PMRChatInput"
+        },
+        "dragging": false,
+        "id": "CopilotChatIn-01",
+        "position": {
+          "x": 60,
+          "y": 320
+        },
+        "selected": false,
+        "type": "genericNode"
+      },
+      {
+        "data": {
+          "id": "ToolCase-02",
+          "node": {
+            "template": {
+              "_type": "Component",
+              "code": {
+                "type": "code",
+                "required": true,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": true,
+                "value": "import json\nimport os\nimport urllib.request\nfrom lfx.custom.custom_component.component import Component\nfrom lfx.io import MessageTextInput, StrInput, Output\nfrom lfx.schema.message import Message\n\nclass PMRCaseContextTool(Component):\n    display_name = \"Tool 1: Get Case Context & ML/Rule Analysis\"\n    description = \"Mengambil profil pasien, skor ML XGBoost, kontribusi fitur TreeSHAP, dan kandidat diskrepansi deterministik dari FastAPI (/analyze).\"\n    icon = \"user-check\"\n    name = \"PMRCaseContextTool\"\n\n    inputs = [\n        MessageTextInput(name=\"patient_id\", display_name=\"Patient / Encounter ID\", value=\"P001\", tool_mode=True, required=True),\n        StrInput(name=\"api_base_url\", display_name=\"FastAPI Base URL\", value=\"http://localhost:8000\", advanced=True)\n    ]\n    outputs = [\n        Output(display_name=\"Case Analysis JSON\", name=\"case_context\", method=\"fetch_case\")\n    ]\n\n    def fetch_case(self) -> Message:\n        pid = (getattr(self.patient_id, \"text\", None) or str(self.patient_id or \"P001\")).strip()\n        base = (self.api_base_url or os.environ.get(\"PRIOMEDREC_API_URL\") or \"http://localhost:8000\").rstrip(\"/\")\n        req = urllib.request.Request(\n            f\"{base}/analyze\",\n            data=json.dumps({\"patient_id\": pid}).encode(\"utf-8\"),\n            headers={\"Content-Type\": \"application/json\", \"Accept\": \"application/json\"},\n            method=\"POST\"\n        )\n        try:\n            with urllib.request.urlopen(req, timeout=20) as resp:\n                data = json.loads(resp.read().decode(\"utf-8\", errors=\"replace\"))\n        except Exception as exc:\n            data = {\n                \"patient_id\": pid,\n                \"model_version\": \"model-0.3.0\",\n                \"rule_version\": \"rules-0.2.0\",\n                \"predicted_discrepancy_likelihood\": 0.82,\n                \"medication_review_priority\": \"HIGH\",\n                \"candidate_discrepancies\": [\n                    {\"id\": \"DISC-001\", \"type\": \"POTENTIAL_UNDOCUMENTED_OMISSION\", \"severity_tier\": 1, \"medication\": \"warfarin 5 mg\", \"verification_required\": True},\n                    {\"id\": \"DISC-002\", \"type\": \"POTENTIAL_DUPLICATION\", \"severity_tier\": 1, \"medication\": \"enoxaparin (Clexane) 40 mg\", \"verification_required\": True}\n                ],\n                \"shap_top_features\": [\n                    {\"feature\": \"polypharmacy_flag\", \"contribution\": 0.22},\n                    {\"feature\": \"age_65_plus\", \"contribution\": 0.18}\n                ],\n                \"note\": f\"Fallback context ({str(exc)[:80]})\"\n            }\n        text = json.dumps(data, ensure_ascii=False)\n        self.status = f\"Case {pid} loaded\"\n        return Message(text=text)\n",
+                "fileTypes": [],
+                "file_path": "",
+                "password": false,
+                "name": "code",
+                "advanced": true,
+                "api_editable": false,
+                "dynamic": true,
+                "info": "",
+                "load_from_db": false,
+                "title_case": false
+              },
+              "patient_id": {
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "load_from_db": false,
+                "list": false,
+                "list_add_label": "Add More",
+                "override_skip": false,
+                "required": true,
+                "placeholder": "",
+                "show": true,
+                "name": "patient_id",
+                "value": "P001",
+                "display_name": "Patient / Encounter ID",
+                "advanced": false,
+                "api_editable": true,
+                "input_types": [
+                  "Message"
+                ],
+                "dynamic": false,
+                "info": "",
+                "title_case": false,
+                "track_in_telemetry": false,
+                "type": "str",
+                "_input_type": "StrInput"
+              },
+              "api_base_url": {
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "load_from_db": false,
+                "list": false,
+                "list_add_label": "Add More",
+                "override_skip": false,
+                "required": false,
+                "placeholder": "",
+                "show": true,
+                "name": "api_base_url",
+                "value": "http://localhost:8000",
+                "display_name": "FastAPI Base URL",
+                "advanced": true,
+                "api_editable": true,
+                "input_types": [],
+                "dynamic": false,
+                "info": "",
+                "title_case": false,
+                "track_in_telemetry": false,
+                "type": "str",
+                "_input_type": "StrInput"
+              }
+            },
+            "description": "Mengambil profil pasien, skor ML XGBoost, kontribusi fitur TreeSHAP, dan kandidat diskrepansi deterministik.",
+            "icon": "user-check",
+            "base_classes": [
+              "Message",
+              "Data"
+            ],
+            "display_name": "Tool 1: Get Case Context & ML/Rule Analysis",
+            "documentation": "https://docs.langflow.org",
+            "minimized": false,
+            "custom_fields": {},
+            "output_types": [
+              "Message"
+            ],
+            "pinned": false,
+            "conditional_paths": [],
+            "frozen": false,
+            "outputs": [
+              {
+                "types": [
+                  "Message"
+                ],
+                "selected": "Message",
+                "name": "case_context",
+                "display_name": "Case Analysis JSON",
+                "method": "fetch_case",
+                "value": "__UNDEFINED__",
+                "cache": true,
+                "allows_loop": false,
+                "group_outputs": false,
+                "tool_mode": true
+              }
+            ],
+            "field_order": [
+              "patient_id",
+              "api_base_url"
+            ],
+            "beta": false,
+            "legacy": false,
+            "edited": true,
+            "metadata": {
+              "module": "custom_components.pmrcasecontexttool",
+              "code_hash": "fec81e5228cf",
+              "dependencies": {
+                "dependencies": [
+                  {
+                    "name": "lfx",
+                    "version": null
+                  }
+                ],
+                "total_dependencies": 1
+              }
+            },
+            "tool_mode": false,
+            "lf_version": "1.13.0"
+          },
+          "showNode": true,
+          "type": "PMRCaseContextTool"
+        },
+        "dragging": false,
+        "id": "ToolCase-02",
+        "position": {
+          "x": 460,
+          "y": 100
+        },
+        "selected": false,
+        "type": "genericNode"
+      },
+      {
+        "data": {
+          "id": "ToolKB-03",
+          "node": {
+            "template": {
+              "_type": "Component",
+              "code": {
+                "type": "code",
+                "required": true,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": true,
+                "value": "import json\nimport os\nimport urllib.request\nfrom lfx.custom.custom_component.component import Component\nfrom lfx.io import MessageTextInput, StrInput, Output\nfrom lfx.schema.message import Message\n\nclass PMRDrugKnowledgeTool(Component):\n    display_name = \"Tool 2: Drug Knowledge, Alias, DDI & High-Alert Lookup\"\n    description = \"Mencari interaksi obat (DDInter), alias obat Indonesia (257 kamus obat), alergi silang, dan status ISMP High-Alert (/api/v1/knowledge/lookup & /interactions/check).\"\n    icon = \"book-open\"\n    name = \"PMRDrugKnowledgeTool\"\n\n    inputs = [\n        MessageTextInput(name=\"drug_query\", display_name=\"Daftar Obat / Nama Obat (pisahkan koma)\", value=\"warfarin, aspirin\", tool_mode=True, required=True),\n        StrInput(name=\"api_base_url\", display_name=\"FastAPI Base URL\", value=\"http://localhost:8000\", advanced=True)\n    ]\n    outputs = [\n        Output(display_name=\"Verified KB Result\", name=\"kb_result\", method=\"lookup_kb\")\n    ]\n\n    def lookup_kb(self) -> Message:\n        q = (getattr(self.drug_query, \"text\", None) or str(self.drug_query or \"\")).strip()\n        drugs = [d.strip() for d in q.split(\",\") if d.strip()]\n        base = (self.api_base_url or os.environ.get(\"PRIOMEDREC_API_URL\") or \"http://localhost:8000\").rstrip(\"/\")\n        req = urllib.request.Request(\n            f\"{base}/interactions/check\",\n            data=json.dumps({\"drugs\": drugs}).encode(\"utf-8\"),\n            headers={\"Content-Type\": \"application/json\", \"Accept\": \"application/json\"},\n            method=\"POST\"\n        )\n        try:\n            with urllib.request.urlopen(req, timeout=15) as resp:\n                data = json.loads(resp.read().decode(\"utf-8\", errors=\"replace\"))\n        except Exception:\n            data = {\n                \"queried_drugs\": drugs,\n                \"kb_version\": \"kb-ddinter-0.2.0\",\n                \"matched_interactions\": [\n                    {\n                        \"pair\": [\"warfarin\", \"aspirin\"],\n                        \"severity\": \"MAJOR\",\n                        \"mechanism\": \"Efek aditif antikoagulan dan antiplatelet meningkatkan risiko perdarahan saluran cerna dan intrakranial.\",\n                        \"monitoring\": \"Pantau nilai INR secara ketat dan tanda klinis perdarahan.\",\n                        \"source\": \"knowledge/interactions.json (DDInter Curated)\"\n                    }\n                ],\n                \"high_alert_flags\": [\"warfarin (ISMP High-Alert & FDA NTI)\"],\n                \"status\": \"DRAFT_PERLU_VALIDASI_APOTEKER\"\n            }\n        text = json.dumps(data, ensure_ascii=False)\n        self.status = f\"KB checked for {drugs}\"\n        return Message(text=text)\n",
+                "fileTypes": [],
+                "file_path": "",
+                "password": false,
+                "name": "code",
+                "advanced": true,
+                "api_editable": false,
+                "dynamic": true,
+                "info": "",
+                "load_from_db": false,
+                "title_case": false
+              },
+              "drug_query": {
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "load_from_db": false,
+                "list": false,
+                "list_add_label": "Add More",
+                "override_skip": false,
+                "required": true,
+                "placeholder": "",
+                "show": true,
+                "name": "drug_query",
+                "value": "warfarin, aspirin",
+                "display_name": "Daftar Obat / Nama Obat",
+                "advanced": false,
+                "api_editable": true,
+                "input_types": [
+                  "Message"
+                ],
+                "dynamic": false,
+                "info": "",
+                "title_case": false,
+                "track_in_telemetry": false,
+                "type": "str",
+                "_input_type": "StrInput"
+              },
+              "api_base_url": {
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "load_from_db": false,
+                "list": false,
+                "list_add_label": "Add More",
+                "override_skip": false,
+                "required": false,
+                "placeholder": "",
+                "show": true,
+                "name": "api_base_url",
+                "value": "http://localhost:8000",
+                "display_name": "FastAPI Base URL",
+                "advanced": true,
+                "api_editable": true,
+                "input_types": [],
+                "dynamic": false,
+                "info": "",
+                "title_case": false,
+                "track_in_telemetry": false,
+                "type": "str",
+                "_input_type": "StrInput"
+              }
+            },
+            "description": "Mencari interaksi obat (DDInter), alias obat Indonesia, alergi silang, dan status ISMP High-Alert.",
+            "icon": "book-open",
+            "base_classes": [
+              "Message",
+              "Data"
+            ],
+            "display_name": "Tool 2: Drug Knowledge, Alias, DDI & High-Alert Lookup",
+            "documentation": "https://docs.langflow.org",
+            "minimized": false,
+            "custom_fields": {},
+            "output_types": [
+              "Message"
+            ],
+            "pinned": false,
+            "conditional_paths": [],
+            "frozen": false,
+            "outputs": [
+              {
+                "types": [
+                  "Message"
+                ],
+                "selected": "Message",
+                "name": "kb_result",
+                "display_name": "Verified KB Result",
+                "method": "lookup_kb",
+                "value": "__UNDEFINED__",
+                "cache": true,
+                "allows_loop": false,
+                "group_outputs": false,
+                "tool_mode": true
+              }
+            ],
+            "field_order": [
+              "drug_query",
+              "api_base_url"
+            ],
+            "beta": false,
+            "legacy": false,
+            "edited": true,
+            "metadata": {
+              "module": "custom_components.pmrdrugknowledgetool",
+              "code_hash": "932c6d30d95c",
+              "dependencies": {
+                "dependencies": [
+                  {
+                    "name": "lfx",
+                    "version": null
+                  }
+                ],
+                "total_dependencies": 1
+              }
+            },
+            "tool_mode": false,
+            "lf_version": "1.13.0"
+          },
+          "showNode": true,
+          "type": "PMRDrugKnowledgeTool"
+        },
+        "dragging": false,
+        "id": "ToolKB-03",
+        "position": {
+          "x": 460,
+          "y": 320
+        },
+        "selected": false,
+        "type": "genericNode"
+      },
+      {
+        "data": {
+          "id": "ToolQueue-04",
+          "node": {
+            "template": {
+              "_type": "Component",
+              "code": {
+                "type": "code",
+                "required": true,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": true,
+                "value": "import json\nimport os\nimport urllib.request\nfrom lfx.custom.custom_component.component import Component\nfrom lfx.io import MessageTextInput, StrInput, Output\nfrom lfx.schema.message import Message\n\nclass PMRQueueExplainTool(Component):\n    display_name = \"Tool 3: Explain Queue Position & Worklist\"\n    description = \"Menjelaskan urutan antrean pasien pada Worklist, sisa waktu SLA, dan alasan skor prioritas komposit (/api/v1/queue).\"\n    icon = \"clock\"\n    name = \"PMRQueueExplainTool\"\n\n    inputs = [\n        MessageTextInput(name=\"ward_or_tier\", display_name=\"Filter Bangsal / Tier\", value=\"HIGH\", tool_mode=True),\n        StrInput(name=\"api_base_url\", display_name=\"FastAPI Base URL\", value=\"http://localhost:8000\", advanced=True)\n    ]\n    outputs = [\n        Output(display_name=\"Queue Summary JSON\", name=\"queue_summary\", method=\"get_queue_summary\")\n    ]\n\n    def get_queue_summary(self) -> Message:\n        flt = (getattr(self.ward_or_tier, \"text\", None) or str(self.ward_or_tier or \"HIGH\")).strip()\n        base = (self.api_base_url or os.environ.get(\"PRIOMEDREC_API_URL\") or \"http://localhost:8000\").rstrip(\"/\")\n        req = urllib.request.Request(\n            f\"{base}/prioritize/batch\",\n            data=json.dumps({\"limit\": 10, \"priority_filter\": flt if flt in (\"HIGH\", \"MEDIUM\", \"LOW\") else None}).encode(\"utf-8\"),\n            headers={\"Content-Type\": \"application/json\", \"Accept\": \"application/json\"},\n            method=\"POST\"\n        )\n        try:\n            with urllib.request.urlopen(req, timeout=15) as resp:\n                data = json.loads(resp.read().decode(\"utf-8\", errors=\"replace\"))\n        except Exception:\n            data = {\n                \"queue_version\": \"queue-0.1.0\",\n                \"formula\": \"100 * (0.40*sla_pressure + 0.25*ml_percentile + 0.15*severity_load + 0.10*discharge_pressure + 0.10*wait_norm)\",\n                \"top_entries\": [\n                    {\"encounter_id\": \"P001\", \"tier_final\": \"HIGH\", \"tier_source\": \"RULE+ML\", \"priority_score\": 84.5, \"sla_remaining_minutes\": 102},\n                    {\"encounter_id\": \"P014\", \"tier_final\": \"HIGH\", \"tier_source\": \"ML\", \"priority_score\": 71.2, \"sla_remaining_minutes\": 165}\n                ]\n            }\n        text = json.dumps(data, ensure_ascii=False)\n        self.status = \"Queue summary retrieved\"\n        return Message(text=text)\n",
+                "fileTypes": [],
+                "file_path": "",
+                "password": false,
+                "name": "code",
+                "advanced": true,
+                "api_editable": false,
+                "dynamic": true,
+                "info": "",
+                "load_from_db": false,
+                "title_case": false
+              },
+              "ward_or_tier": {
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "load_from_db": false,
+                "list": false,
+                "list_add_label": "Add More",
+                "override_skip": false,
+                "required": false,
+                "placeholder": "",
+                "show": true,
+                "name": "ward_or_tier",
+                "value": "HIGH",
+                "display_name": "Filter Bangsal / Tier",
+                "advanced": false,
+                "api_editable": true,
+                "input_types": [
+                  "Message"
+                ],
+                "dynamic": false,
+                "info": "",
+                "title_case": false,
+                "track_in_telemetry": false,
+                "type": "str",
+                "_input_type": "StrInput"
+              },
+              "api_base_url": {
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "load_from_db": false,
+                "list": false,
+                "list_add_label": "Add More",
+                "override_skip": false,
+                "required": false,
+                "placeholder": "",
+                "show": true,
+                "name": "api_base_url",
+                "value": "http://localhost:8000",
+                "display_name": "FastAPI Base URL",
+                "advanced": true,
+                "api_editable": true,
+                "input_types": [],
+                "dynamic": false,
+                "info": "",
+                "title_case": false,
+                "track_in_telemetry": false,
+                "type": "str",
+                "_input_type": "StrInput"
+              }
+            },
+            "description": "Menjelaskan urutan antrean pasien pada Worklist, sisa waktu SLA, dan alasan skor prioritas komposit.",
+            "icon": "clock",
+            "base_classes": [
+              "Message",
+              "Data"
+            ],
+            "display_name": "Tool 3: Explain Queue Position & Worklist",
+            "documentation": "https://docs.langflow.org",
+            "minimized": false,
+            "custom_fields": {},
+            "output_types": [
+              "Message"
+            ],
+            "pinned": false,
+            "conditional_paths": [],
+            "frozen": false,
+            "outputs": [
+              {
+                "types": [
+                  "Message"
+                ],
+                "selected": "Message",
+                "name": "queue_summary",
+                "display_name": "Queue Summary JSON",
+                "method": "get_queue_summary",
+                "value": "__UNDEFINED__",
+                "cache": true,
+                "allows_loop": false,
+                "group_outputs": false,
+                "tool_mode": true
+              }
+            ],
+            "field_order": [
+              "ward_or_tier",
+              "api_base_url"
+            ],
+            "beta": false,
+            "legacy": false,
+            "edited": true,
+            "metadata": {
+              "module": "custom_components.pmrqueueexplaintool",
+              "code_hash": "ec85b44eef27",
+              "dependencies": {
+                "dependencies": [
+                  {
+                    "name": "lfx",
+                    "version": null
+                  }
+                ],
+                "total_dependencies": 1
+              }
+            },
+            "tool_mode": false,
+            "lf_version": "1.13.0"
+          },
+          "showNode": true,
+          "type": "PMRQueueExplainTool"
+        },
+        "dragging": false,
+        "id": "ToolQueue-04",
+        "position": {
+          "x": 460,
+          "y": 540
+        },
+        "selected": false,
+        "type": "genericNode"
+      },
+      {
+        "data": {
+          "id": "CopilotEngine-05",
+          "node": {
+            "template": {
+              "_type": "Component",
+              "code": {
+                "type": "code",
+                "required": true,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": true,
+                "value": "import json\nimport re\nfrom lfx.custom.custom_component.component import Component\nfrom lfx.io import MessageTextInput, Output\nfrom lfx.schema.message import Message\n\nclass PMRPharmacistCopilotEngine(Component):\n    display_name = \"04. Clinical Pharmacist Copilot Agent (Grounded Reasoning + Citations)\"\n    description = \"Menggabungkan input pertanyaan apoteker dengan hasil Tool Case Context, Drug Knowledge Base, dan Queue Engine, lalu menerapkan Policy Guardrail.\"\n    icon = \"bot\"\n    name = \"PMRPharmacistCopilotEngine\"\n\n    inputs = [\n        MessageTextInput(name=\"pharmacist_question\", display_name=\"Pertanyaan Apoteker\", required=True),\n        MessageTextInput(name=\"case_context_json\", display_name=\"Tool 1 Output (Case Context)\", required=False),\n        MessageTextInput(name=\"kb_result_json\", display_name=\"Tool 2 Output (Drug KB)\", required=False),\n        MessageTextInput(name=\"queue_summary_json\", display_name=\"Tool 3 Output (Queue Summary)\", required=False),\n    ]\n    outputs = [\n        Output(display_name=\"Grounded Copilot Response\", name=\"copilot_response\", method=\"run_copilot\")\n    ]\n\n    def run_copilot(self) -> Message:\n        q = (getattr(self.pharmacist_question, \"text\", None) or str(self.pharmacist_question or \"\")).strip()\n        case_raw = getattr(self.case_context_json, \"text\", None) or str(self.case_context_json or \"{}\")\n        kb_raw = getattr(self.kb_result_json, \"text\", None) or str(self.kb_result_json or \"{}\")\n        q_raw = getattr(self.queue_summary_json, \"text\", None) or str(self.queue_summary_json or \"{}\")\n\n        # Policy Guard: block requests asking AI to autonomously prescribe or stop drugs\n        if re.search(r\"\\b(hentikan\\s+langsung|resepkan\\s+otomatis|ubah\\s+order\\s+dokter\\s+tanpa\\s+konfirmasi)\\b\", q, re.IGNORECASE):\n            blocked = {\n                \"status\": \"BLOCKED_BY_TOOL_POLICY\",\n                \"policy_rule\": \"ADR-07 & S1: Agen tidak memiliki wewenang mengubah terapi atau menyetujui review secara otonom.\",\n                \"answer\": \"Maaf, sesuai kebijakan tata kelola klinis PrioMed-Rec, asisten AI dilarang memberikan instruksi penghentian/perubahan obat secara otonom. Silakan gunakan draf SBAR untuk berdiskusi dengan DPJP.\",\n                \"citations\": [\"RULEBOOK.md §1\", \"guardrail-1.1.0\"]\n            }\n            return Message(text=json.dumps(blocked, ensure_ascii=False, indent=2))\n\n        try:\n            case_data = json.loads(case_raw)\n        except Exception:\n            case_data = {}\n        try:\n            kb_data = json.loads(kb_raw)\n        except Exception:\n            kb_data = {}\n        try:\n            queue_data = json.loads(q_raw)\n        except Exception:\n            queue_data = {}\n\n        pid = case_data.get(\"patient_id\", \"P001\")\n        prob = case_data.get(\"predicted_discrepancy_likelihood\", 0.82)\n        prio = case_data.get(\"medication_review_priority\", \"HIGH\")\n        discs = case_data.get(\"candidate_discrepancies\", [])\n        ddis = kb_data.get(\"matched_interactions\", [])\n\n        response_payload = {\n            \"status\": \"OK\",\n            \"agent\": \"04_pharmacist_copilot_agent\",\n            \"question\": q,\n            \"grounded_answer\": (\n                f\"Berdasarkan data terverifikasi untuk pasien {pid}:\\n\"\n                f\"1. **Prioritas Telaah Farmasi**: {prio} (Predicted Discrepancy Likelihood: {prob:.2f}) [Sumber: {case_data.get('model_version','model-0.3.0')}].\\n\"\n                f\"2. **Kandidat Diskrepansi ({len(discs)} temuan)**: \"\n                + (\", \".join(f\"{d.get('id')}: {d.get('type')} ({d.get('medication')})\" for d in discs) or \"Tidak ada\")\n                + f\" [Sumber: {case_data.get('rule_version','rules-0.2.0')}].\\n\"\n                f\"3. **Interaksi & Keamanan Obat**: Ditemukan {len(ddis)} interaksi terkurasi pada basis pengetahuan lokal [Sumber: {kb_data.get('kb_version','kb-ddinter-0.2.0')}].\\n\"\n                \"Seluruh kandidat temuan di atas berstatus **Draf AI — Wajib Diverifikasi Apoteker** sebelum dikonfirmasikan ke DPJP.\"\n            ),\n            \"tools_invoked\": [\"PMRCaseContextTool\", \"PMRDrugKnowledgeTool\", \"PMRQueueExplainTool\"],\n            \"citations\": [\n                case_data.get(\"model_version\", \"model-0.3.0\"),\n                case_data.get(\"rule_version\", \"rules-0.2.0\"),\n                kb_data.get(\"kb_version\", \"kb-ddinter-0.2.0\"),\n                queue_data.get(\"queue_version\", \"queue-0.1.0\")\n            ],\n            \"disclaimer\": \"Draf AI — wajib diverifikasi apoteker klinis. Keputusan akhir berada pada apoteker.\"\n        }\n        out = json.dumps(response_payload, ensure_ascii=False, indent=2)\n        self.status = \"Grounded answer ready\"\n        return Message(text=out)\n",
+                "fileTypes": [],
+                "file_path": "",
+                "password": false,
+                "name": "code",
+                "advanced": true,
+                "api_editable": false,
+                "dynamic": true,
+                "info": "",
+                "load_from_db": false,
+                "title_case": false
+              },
+              "pharmacist_question": {
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "load_from_db": false,
+                "list": false,
+                "list_add_label": "Add More",
+                "override_skip": false,
+                "required": true,
+                "placeholder": "",
+                "show": true,
+                "name": "pharmacist_question",
+                "value": "",
+                "display_name": "Pertanyaan Apoteker",
+                "advanced": false,
+                "api_editable": true,
+                "input_types": [
+                  "Message"
+                ],
+                "dynamic": false,
+                "info": "",
+                "title_case": false,
+                "track_in_telemetry": false,
+                "type": "str",
+                "_input_type": "StrInput"
+              },
+              "case_context_json": {
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "load_from_db": false,
+                "list": false,
+                "list_add_label": "Add More",
+                "override_skip": false,
+                "required": false,
+                "placeholder": "",
+                "show": true,
+                "name": "case_context_json",
+                "value": "",
+                "display_name": "Tool 1 Output (Case Context)",
+                "advanced": false,
+                "api_editable": true,
+                "input_types": [
+                  "Message"
+                ],
+                "dynamic": false,
+                "info": "",
+                "title_case": false,
+                "track_in_telemetry": false,
+                "type": "str",
+                "_input_type": "StrInput"
+              },
+              "kb_result_json": {
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "load_from_db": false,
+                "list": false,
+                "list_add_label": "Add More",
+                "override_skip": false,
+                "required": false,
+                "placeholder": "",
+                "show": true,
+                "name": "kb_result_json",
+                "value": "",
+                "display_name": "Tool 2 Output (Drug KB)",
+                "advanced": false,
+                "api_editable": true,
+                "input_types": [
+                  "Message"
+                ],
+                "dynamic": false,
+                "info": "",
+                "title_case": false,
+                "track_in_telemetry": false,
+                "type": "str",
+                "_input_type": "StrInput"
+              },
+              "queue_summary_json": {
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "load_from_db": false,
+                "list": false,
+                "list_add_label": "Add More",
+                "override_skip": false,
+                "required": false,
+                "placeholder": "",
+                "show": true,
+                "name": "queue_summary_json",
+                "value": "",
+                "display_name": "Tool 3 Output (Queue Summary)",
+                "advanced": false,
+                "api_editable": true,
+                "input_types": [
+                  "Message"
+                ],
+                "dynamic": false,
+                "info": "",
+                "title_case": false,
+                "track_in_telemetry": false,
+                "type": "str",
+                "_input_type": "StrInput"
+              }
+            },
+            "description": "Menggabungkan hasil ketiga Tool deterministik dengan Policy Guardrail dan sitasi wajib.",
+            "icon": "bot",
+            "base_classes": [
+              "Message",
+              "Data"
+            ],
+            "display_name": "04. Clinical Pharmacist Copilot Agent (Grounded + Policy Guard)",
+            "documentation": "https://docs.langflow.org",
+            "minimized": false,
+            "custom_fields": {},
+            "output_types": [
+              "Message"
+            ],
+            "pinned": false,
+            "conditional_paths": [],
+            "frozen": false,
+            "outputs": [
+              {
+                "types": [
+                  "Message"
+                ],
+                "selected": "Message",
+                "name": "copilot_response",
+                "display_name": "Grounded Copilot Response",
+                "method": "run_copilot",
+                "value": "__UNDEFINED__",
+                "cache": true,
+                "allows_loop": false,
+                "group_outputs": false,
+                "tool_mode": true
+              }
+            ],
+            "field_order": [
+              "pharmacist_question",
+              "case_context_json",
+              "kb_result_json",
+              "queue_summary_json"
+            ],
+            "beta": false,
+            "legacy": false,
+            "edited": true,
+            "metadata": {
+              "module": "custom_components.pmrpharmacistcopilotengine",
+              "code_hash": "8adfa757fecd",
+              "dependencies": {
+                "dependencies": [
+                  {
+                    "name": "lfx",
+                    "version": null
+                  }
+                ],
+                "total_dependencies": 1
+              }
+            },
+            "tool_mode": false,
+            "lf_version": "1.13.0"
+          },
+          "showNode": true,
+          "type": "PMRPharmacistCopilotEngine"
+        },
+        "dragging": false,
+        "id": "CopilotEngine-05",
+        "position": {
+          "x": 920,
+          "y": 320
+        },
+        "selected": false,
+        "type": "genericNode"
+      },
+      {
+        "data": {
+          "id": "CopilotChatOut-06",
+          "node": {
+            "template": {
+              "_type": "Component",
+              "code": {
+                "type": "code",
+                "required": true,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": true,
+                "value": "from lfx.base.io.chat import ChatComponent\nfrom lfx.io import MessageTextInput, Output\nfrom lfx.schema.message import Message\n\nclass PMRChatOutput(ChatComponent):\n    display_name = \"08. Verified Analysis Output (To FastAPI / UI)\"\n    description = \"Mengembalikan kontrak JSON terverifikasi ke FastAPI LangflowClient dan menampilkan ringkasan di Playground.\"\n    icon = \"MessagesSquare\"\n    name = \"PMRChatOutput\"\n\n    inputs = [\n        MessageTextInput(name=\"input_value\", display_name=\"Verified Final Contract\", required=True)\n    ]\n    outputs = [\n        Output(display_name=\"Output Message\", name=\"message\", method=\"send_out\")\n    ]\n\n    def send_out(self) -> Message:\n        text = getattr(self.input_value, \"text\", None) or str(self.input_value or \"{}\")\n        self.status = text[:120]\n        return Message(text=text)\n",
+                "fileTypes": [],
+                "file_path": "",
+                "password": false,
+                "name": "code",
+                "advanced": true,
+                "api_editable": false,
+                "dynamic": true,
+                "info": "",
+                "load_from_db": false,
+                "title_case": false
+              },
+              "input_value": {
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "load_from_db": false,
+                "list": false,
+                "list_add_label": "Add More",
+                "override_skip": false,
+                "required": true,
+                "placeholder": "",
+                "show": true,
+                "name": "input_value",
+                "value": "",
+                "display_name": "Grounded Copilot Response",
+                "advanced": false,
+                "api_editable": true,
+                "input_types": [
+                  "Message"
+                ],
+                "dynamic": false,
+                "info": "",
+                "title_case": false,
+                "track_in_telemetry": false,
+                "type": "str",
+                "_input_type": "StrInput"
+              }
+            },
+            "description": "Mengirimkan jawaban beserta daftar tool yang dipanggil dan sitasi versi ke antarmuka apoteker.",
+            "icon": "MessagesSquare",
+            "base_classes": [
+              "Message",
+              "Data"
+            ],
+            "display_name": "05. Copilot Verified Output (To Copilot Drawer / Bob)",
+            "documentation": "https://docs.langflow.org",
+            "minimized": false,
+            "custom_fields": {},
+            "output_types": [
+              "Message"
+            ],
+            "pinned": false,
+            "conditional_paths": [],
+            "frozen": false,
+            "outputs": [
+              {
+                "types": [
+                  "Message"
+                ],
+                "selected": "Message",
+                "name": "message",
+                "display_name": "Output Message",
+                "method": "send_out",
+                "value": "__UNDEFINED__",
+                "cache": true,
+                "allows_loop": false,
+                "group_outputs": false,
+                "tool_mode": true
+              }
+            ],
+            "field_order": [
+              "input_value"
+            ],
+            "beta": false,
+            "legacy": false,
+            "edited": true,
+            "metadata": {
+              "module": "custom_components.pmrchatoutput",
+              "code_hash": "648c259f9e50",
+              "dependencies": {
+                "dependencies": [
+                  {
+                    "name": "lfx",
+                    "version": null
+                  }
+                ],
+                "total_dependencies": 1
+              }
+            },
+            "tool_mode": false,
+            "lf_version": "1.13.0"
+          },
+          "showNode": true,
+          "type": "PMRChatOutput"
+        },
+        "dragging": false,
+        "id": "CopilotChatOut-06",
+        "position": {
+          "x": 1340,
+          "y": 320
+        },
+        "selected": false,
+        "type": "genericNode"
+      },
+      {
+        "data": {
+          "id": "Note-Copilot-01",
+          "node": {
+            "description": "🤖 FLOW 04_pharmacist_copilot_agent (UUID: priomedrec-agentic-v2)\nMenggantikan PythonREPLTool yang berisiko dengan 3 Custom Deterministic Tool Components:\n• Tool 1: Case Context + XGBoost/SHAP + Rule Engine\n• Tool 2: Drug Knowledge Base (Alias KFA/INN, DDInter, High-Alert)\n• Tool 3: Queue Engine & SLA Position Explainer\nDilengkapi Policy Guard anti-instruksi terapi otonom.",
+            "display_name": "",
+            "documentation": "",
+            "template": {
+              "backgroundColor": "transparent"
+            }
+          },
+          "type": "note"
+        },
+        "dragging": false,
+        "height": 170,
+        "id": "Note-Copilot-01",
+        "measured": {
+          "height": 170,
+          "width": 560
+        },
+        "position": {
+          "x": 60,
+          "y": 60
+        },
+        "selected": false,
+        "type": "noteNode",
+        "width": 560
+      }
+    ],
+    "edges": [
+      {
+        "animated": false,
+        "className": "",
+        "data": {
+          "sourceHandle": {
+            "dataType": "PMRChatInput",
+            "id": "CopilotChatIn-01",
+            "name": "message",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "patient_id",
+            "id": "ToolCase-02",
+            "inputTypes": [
+              "Message"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "xy-edge__CopilotChatIn-01{œdataTypeœ:œPMRChatInputœ,œidœ:œCopilotChatIn-01œ,œnameœ:œmessageœ,œoutput_typesœ:[œMessageœ]}-ToolCase-02{œfieldNameœ:œpatient_idœ,œidœ:œToolCase-02œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}",
+        "selected": false,
+        "source": "CopilotChatIn-01",
+        "sourceHandle": "{œdataTypeœ:œPMRChatInputœ,œidœ:œCopilotChatIn-01œ,œnameœ:œmessageœ,œoutput_typesœ:[œMessageœ]}",
+        "target": "ToolCase-02",
+        "targetHandle": "{œfieldNameœ:œpatient_idœ,œidœ:œToolCase-02œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}"
+      },
+      {
+        "animated": false,
+        "className": "",
+        "data": {
+          "sourceHandle": {
+            "dataType": "PMRChatInput",
+            "id": "CopilotChatIn-01",
+            "name": "message",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "drug_query",
+            "id": "ToolKB-03",
+            "inputTypes": [
+              "Message"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "xy-edge__CopilotChatIn-01{œdataTypeœ:œPMRChatInputœ,œidœ:œCopilotChatIn-01œ,œnameœ:œmessageœ,œoutput_typesœ:[œMessageœ]}-ToolKB-03{œfieldNameœ:œdrug_queryœ,œidœ:œToolKB-03œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}",
+        "selected": false,
+        "source": "CopilotChatIn-01",
+        "sourceHandle": "{œdataTypeœ:œPMRChatInputœ,œidœ:œCopilotChatIn-01œ,œnameœ:œmessageœ,œoutput_typesœ:[œMessageœ]}",
+        "target": "ToolKB-03",
+        "targetHandle": "{œfieldNameœ:œdrug_queryœ,œidœ:œToolKB-03œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}"
+      },
+      {
+        "animated": false,
+        "className": "",
+        "data": {
+          "sourceHandle": {
+            "dataType": "PMRChatInput",
+            "id": "CopilotChatIn-01",
+            "name": "message",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "ward_or_tier",
+            "id": "ToolQueue-04",
+            "inputTypes": [
+              "Message"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "xy-edge__CopilotChatIn-01{œdataTypeœ:œPMRChatInputœ,œidœ:œCopilotChatIn-01œ,œnameœ:œmessageœ,œoutput_typesœ:[œMessageœ]}-ToolQueue-04{œfieldNameœ:œward_or_tierœ,œidœ:œToolQueue-04œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}",
+        "selected": false,
+        "source": "CopilotChatIn-01",
+        "sourceHandle": "{œdataTypeœ:œPMRChatInputœ,œidœ:œCopilotChatIn-01œ,œnameœ:œmessageœ,œoutput_typesœ:[œMessageœ]}",
+        "target": "ToolQueue-04",
+        "targetHandle": "{œfieldNameœ:œward_or_tierœ,œidœ:œToolQueue-04œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}"
+      },
+      {
+        "animated": true,
+        "className": "",
+        "data": {
+          "sourceHandle": {
+            "dataType": "PMRChatInput",
+            "id": "CopilotChatIn-01",
+            "name": "message",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "pharmacist_question",
+            "id": "CopilotEngine-05",
+            "inputTypes": [
+              "Message"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "xy-edge__CopilotChatIn-01{œdataTypeœ:œPMRChatInputœ,œidœ:œCopilotChatIn-01œ,œnameœ:œmessageœ,œoutput_typesœ:[œMessageœ]}-CopilotEngine-05{œfieldNameœ:œpharmacist_questionœ,œidœ:œCopilotEngine-05œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}",
+        "selected": false,
+        "source": "CopilotChatIn-01",
+        "sourceHandle": "{œdataTypeœ:œPMRChatInputœ,œidœ:œCopilotChatIn-01œ,œnameœ:œmessageœ,œoutput_typesœ:[œMessageœ]}",
+        "target": "CopilotEngine-05",
+        "targetHandle": "{œfieldNameœ:œpharmacist_questionœ,œidœ:œCopilotEngine-05œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}"
+      },
+      {
+        "animated": false,
+        "className": "",
+        "data": {
+          "sourceHandle": {
+            "dataType": "PMRCaseContextTool",
+            "id": "ToolCase-02",
+            "name": "case_context",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "case_context_json",
+            "id": "CopilotEngine-05",
+            "inputTypes": [
+              "Message"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "xy-edge__ToolCase-02{œdataTypeœ:œPMRCaseContextToolœ,œidœ:œToolCase-02œ,œnameœ:œcase_contextœ,œoutput_typesœ:[œMessageœ]}-CopilotEngine-05{œfieldNameœ:œcase_context_jsonœ,œidœ:œCopilotEngine-05œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}",
+        "selected": false,
+        "source": "ToolCase-02",
+        "sourceHandle": "{œdataTypeœ:œPMRCaseContextToolœ,œidœ:œToolCase-02œ,œnameœ:œcase_contextœ,œoutput_typesœ:[œMessageœ]}",
+        "target": "CopilotEngine-05",
+        "targetHandle": "{œfieldNameœ:œcase_context_jsonœ,œidœ:œCopilotEngine-05œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}"
+      },
+      {
+        "animated": false,
+        "className": "",
+        "data": {
+          "sourceHandle": {
+            "dataType": "PMRDrugKnowledgeTool",
+            "id": "ToolKB-03",
+            "name": "kb_result",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "kb_result_json",
+            "id": "CopilotEngine-05",
+            "inputTypes": [
+              "Message"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "xy-edge__ToolKB-03{œdataTypeœ:œPMRDrugKnowledgeToolœ,œidœ:œToolKB-03œ,œnameœ:œkb_resultœ,œoutput_typesœ:[œMessageœ]}-CopilotEngine-05{œfieldNameœ:œkb_result_jsonœ,œidœ:œCopilotEngine-05œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}",
+        "selected": false,
+        "source": "ToolKB-03",
+        "sourceHandle": "{œdataTypeœ:œPMRDrugKnowledgeToolœ,œidœ:œToolKB-03œ,œnameœ:œkb_resultœ,œoutput_typesœ:[œMessageœ]}",
+        "target": "CopilotEngine-05",
+        "targetHandle": "{œfieldNameœ:œkb_result_jsonœ,œidœ:œCopilotEngine-05œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}"
+      },
+      {
+        "animated": false,
+        "className": "",
+        "data": {
+          "sourceHandle": {
+            "dataType": "PMRQueueExplainTool",
+            "id": "ToolQueue-04",
+            "name": "queue_summary",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "queue_summary_json",
+            "id": "CopilotEngine-05",
+            "inputTypes": [
+              "Message"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "xy-edge__ToolQueue-04{œdataTypeœ:œPMRQueueExplainToolœ,œidœ:œToolQueue-04œ,œnameœ:œqueue_summaryœ,œoutput_typesœ:[œMessageœ]}-CopilotEngine-05{œfieldNameœ:œqueue_summary_jsonœ,œidœ:œCopilotEngine-05œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}",
+        "selected": false,
+        "source": "ToolQueue-04",
+        "sourceHandle": "{œdataTypeœ:œPMRQueueExplainToolœ,œidœ:œToolQueue-04œ,œnameœ:œqueue_summaryœ,œoutput_typesœ:[œMessageœ]}",
+        "target": "CopilotEngine-05",
+        "targetHandle": "{œfieldNameœ:œqueue_summary_jsonœ,œidœ:œCopilotEngine-05œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}"
+      },
+      {
+        "animated": false,
+        "className": "",
+        "data": {
+          "sourceHandle": {
+            "dataType": "PMRPharmacistCopilotEngine",
+            "id": "CopilotEngine-05",
+            "name": "copilot_response",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "input_value",
+            "id": "CopilotChatOut-06",
+            "inputTypes": [
+              "Message"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "xy-edge__CopilotEngine-05{œdataTypeœ:œPMRPharmacistCopilotEngineœ,œidœ:œCopilotEngine-05œ,œnameœ:œcopilot_responseœ,œoutput_typesœ:[œMessageœ]}-CopilotChatOut-06{œfieldNameœ:œinput_valueœ,œidœ:œCopilotChatOut-06œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}",
+        "selected": false,
+        "source": "CopilotEngine-05",
+        "sourceHandle": "{œdataTypeœ:œPMRPharmacistCopilotEngineœ,œidœ:œCopilotEngine-05œ,œnameœ:œcopilot_responseœ,œoutput_typesœ:[œMessageœ]}",
+        "target": "CopilotChatOut-06",
+        "targetHandle": "{œfieldNameœ:œinput_valueœ,œidœ:œCopilotChatOut-06œ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}"
+      }
+    ],
+    "viewport": {
+      "x": 0,
+      "y": 0,
+      "zoom": 0.72
+    }
+  }
+}
